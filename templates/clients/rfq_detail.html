@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}RFQ {{ rfq.short_id }}{% endblock %}
+
+{% block content %}
+{% set color_map = {
+    'SUBMITTED': 'bg-blue-100 text-blue-700',
+    'APPROVED': 'bg-indigo-100 text-indigo-700',
+    'REJECTED': 'bg-red-100 text-red-700',
+    'BIDDING_OPEN': 'bg-yellow-100 text-yellow-700',
+    'BIDDING_CLOSED': 'bg-orange-100 text-orange-700',
+    'QUOTE_SENT': 'bg-purple-100 text-purple-700',
+    'ACCEPTED': 'bg-teal-100 text-teal-700',
+    'DEPOSIT_PAID': 'bg-green-100 text-green-700',
+    'IN_PROGRESS': 'bg-cyan-100 text-cyan-700',
+    'COMPLETED': 'bg-emerald-100 text-emerald-700',
+    'CANCELLED': 'bg-red-100 text-red-600',
+} %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div>
+        <a href="{{ url('clients:rfq_list') }}" class="text-sm text-gray-500 hover:text-[#E85D04]">← My RFQs</a>
+        <div class="flex items-center gap-3 mt-2">
+            <h1 class="text-2xl font-bold text-gray-900">{{ rfq.title }}</h1>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ color_map.get(rfq.status, 'bg-gray-100 text-gray-600') }}">
+                {{ rfq.get_status_display() }}
+            </span>
+        </div>
+        <p class="text-gray-500 mt-1 font-mono text-sm">{{ rfq.short_id }}</p>
+    </div>
+
+    <!-- Progress Tracker -->
+    {% set steps = [
+        ('Submitted', ['SUBMITTED']),
+        ('Under Review', ['APPROVED', 'BIDDING_OPEN', 'BIDDING_CLOSED']),
+        ('Quote Ready', ['QUOTE_SENT']),
+        ('Accepted', ['ACCEPTED', 'DEPOSIT_PAID']),
+        ('In Progress', ['IN_PROGRESS']),
+        ('Completed', ['COMPLETED']),
+    ] %}
+    {% set status_order = ['SUBMITTED', 'APPROVED', 'BIDDING_OPEN', 'BIDDING_CLOSED', 'QUOTE_SENT', 'ACCEPTED', 'DEPOSIT_PAID', 'IN_PROGRESS', 'COMPLETED'] %}
+    {% set current_idx = status_order.index(rfq.status) if rfq.status in status_order else 0 %}
+
+    <div class="bg-white rounded-xl border p-5">
+        <div class="flex items-center justify-between">
+            {% for step_name, step_statuses in steps %}
+            {% set step_idx = status_order.index(step_statuses[0]) if step_statuses[0] in status_order else 0 %}
+            {% set is_done = current_idx >= step_idx %}
+            {% set is_current = rfq.status in step_statuses %}
+            <div class="flex flex-col items-center flex-1">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
+                    {% if is_done %}bg-[#E85D04] text-white{% else %}bg-gray-200 text-gray-400{% endif %}
+                    {% if is_current %}ring-2 ring-orange-300 ring-offset-2{% endif %}">
+                    {% if is_done and not is_current %}✓{% else %}{{ loop.index }}{% endif %}
+                </div>
+                <p class="text-xs mt-1 text-center {% if is_current %}font-semibold text-[#E85D04]{% elif is_done %}text-gray-600{% else %}text-gray-400{% endif %}">
+                    {{ step_name }}
+                </p>
+            </div>
+            {% if not loop.last %}
+            <div class="flex-1 h-0.5 {% if current_idx > status_order.index(step_statuses[0]) %}bg-[#E85D04]{% else %}bg-gray-200{% endif %} mx-1 mb-4"></div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if rfq.status == 'QUOTE_SENT' %}
+    <div class="bg-purple-50 border border-purple-200 rounded-xl p-5 flex items-center justify-between">
+        <div>
+            <p class="font-semibold text-purple-800">🎉 Your quote is ready!</p>
+            <p class="text-sm text-purple-600 mt-1">We've selected the best bid for your project. Review and accept to proceed.</p>
+        </div>
+        <a href="{{ url('clients:quote_review', pk=rfq.pk) }}"
+           class="bg-[#E85D04] text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-orange-600 transition whitespace-nowrap ml-4">
+            Review Quote →
+        </a>
+    </div>
+    {% endif %}
+
+    {% if rfq.status == 'REJECTED' %}
+    <div class="bg-red-50 border border-red-200 rounded-xl p-5">
+        <p class="font-semibold text-red-700">This RFQ was not approved</p>
+        <p class="text-sm text-red-600 mt-1">{{ rfq.rejection_reason }}</p>
+        <a href="{{ url('clients:rfq_create') }}" class="inline-block mt-3 text-sm text-[#E85D04] hover:underline font-medium">
+            Submit a revised RFQ →
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Details -->
+    <div class="bg-white rounded-xl border p-6 space-y-4">
+        <h2 class="font-semibold text-gray-800 text-lg">Project Details</h2>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><p class="text-gray-400 text-xs uppercase font-medium">Category</p><p class="mt-0.5 font-medium">{{ rfq.category.icon }} {{ rfq.category.name }}</p></div>
+            <div><p class="text-gray-400 text-xs uppercase font-medium">Quantity</p><p class="mt-0.5 font-medium">{{ rfq.quantity }} unit(s)</p></div>
+            {% if rfq.materials %}<div><p class="text-gray-400 text-xs uppercase font-medium">Materials</p><p class="mt-0.5 font-medium">{{ rfq.materials }}</p></div>{% endif %}
+            <div><p class="text-gray-400 text-xs uppercase font-medium">Deadline</p><p class="mt-0.5 font-medium text-orange-600">{{ rfq.deadline.strftime('%d %b %Y') }}</p></div>
+            {% if rfq.budget_min or rfq.budget_max %}
+            <div class="col-span-2"><p class="text-gray-400 text-xs uppercase font-medium">Budget Range</p>
+                <p class="mt-0.5 font-medium text-green-600">
+                    {% if rfq.budget_min and rfq.budget_max %}₦{{ "{:,.0f}".format(rfq.budget_min) }} – ₦{{ "{:,.0f}".format(rfq.budget_max) }}
+                    {% elif rfq.budget_max %}Up to ₦{{ "{:,.0f}".format(rfq.budget_max) }}
+                    {% else %}From ₦{{ "{:,.0f}".format(rfq.budget_min) }}{% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="border-t pt-4">
+            <p class="text-gray-400 text-xs uppercase font-medium mb-1">Description</p>
+            <p class="text-gray-700 text-sm leading-relaxed">{{ rfq.description }}</p>
+        </div>
+        {% if rfq.additional_notes %}
+        <div class="border-t pt-4">
+            <p class="text-gray-400 text-xs uppercase font-medium mb-1">Additional Notes</p>
+            <p class="text-gray-700 text-sm">{{ rfq.additional_notes }}</p>
+        </div>
+        {% endif %}
+        {% if rfq.attachments.count() %}
+        <div class="border-t pt-4">
+            <p class="text-gray-400 text-xs uppercase font-medium mb-2">Your Attachments</p>
+            <div class="flex flex-wrap gap-2">
+                {% for att in rfq.attachments.all() %}
+                <a href="{{ att.file.url }}" target="_blank" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition">
+                    📎 {{ att.filename }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

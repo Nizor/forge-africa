@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}All RFQs{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900">RFQ Management</h1>
+        <span class="text-sm text-gray-500">{{ rfqs.count() }} total</span>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ url('forge_admin:rfq_list') }}"
+           class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if not current_status %}bg-[#1A1A2E] text-white{% else %}bg-white border text-gray-600 hover:bg-gray-50{% endif %}">
+            All
+        </a>
+        {% for value, label in status_choices %}
+        <a href="{{ url('forge_admin:rfq_list') }}?status={{ value }}"
+           class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if current_status == value %}bg-[#E85D04] text-white{% else %}bg-white border text-gray-600 hover:bg-gray-50{% endif %}">
+            {{ label }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+        {% set color_map = {
+            'DRAFT': 'bg-gray-100 text-gray-600',
+            'SUBMITTED': 'bg-blue-100 text-blue-700',
+            'APPROVED': 'bg-indigo-100 text-indigo-700',
+            'REJECTED': 'bg-red-100 text-red-700',
+            'BIDDING_OPEN': 'bg-yellow-100 text-yellow-700',
+            'BIDDING_CLOSED': 'bg-orange-100 text-orange-700',
+            'QUOTE_SENT': 'bg-purple-100 text-purple-700',
+            'ACCEPTED': 'bg-teal-100 text-teal-700',
+            'DEPOSIT_PAID': 'bg-green-100 text-green-700',
+            'IN_PROGRESS': 'bg-cyan-100 text-cyan-700',
+            'COMPLETED': 'bg-emerald-100 text-emerald-700',
+            'CANCELLED': 'bg-red-100 text-red-600',
+        } %}
+        {% if rfqs %}
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                <tr>
+                    <th class="px-6 py-3 text-left">RFQ</th>
+                    <th class="px-6 py-3 text-left">Client</th>
+                    <th class="px-6 py-3 text-left">Category</th>
+                    <th class="px-6 py-3 text-left">Bids</th>
+                    <th class="px-6 py-3 text-left">Status</th>
+                    <th class="px-6 py-3 text-left">Submitted</th>
+                    <th class="px-6 py-3 text-left">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for rfq in rfqs %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4">
+                        <p class="font-mono text-xs font-bold text-[#E85D04]">{{ rfq.short_id }}</p>
+                        <p class="font-medium text-gray-900 text-sm max-w-[200px] truncate">{{ rfq.title }}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <p class="font-medium text-gray-800 text-sm">{{ rfq.client.get_full_name() }}</p>
+                        <p class="text-xs text-gray-400">{{ rfq.client.email }}</p>
+                    </td>
+                    <td class="px-6 py-4 text-gray-600 text-sm">{{ rfq.category.name }}</td>
+                    <td class="px-6 py-4">
+                        <span class="font-bold text-gray-900">{{ rfq.bids.count() }}</span>
+                        <span class="text-gray-400 text-xs"> bid(s)</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ color_map.get(rfq.status, 'bg-gray-100 text-gray-600') }}">
+                            {{ rfq.get_status_display() }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-gray-500 text-xs">{{ rfq.created_at.strftime('%d %b %Y') }}</td>
+                    <td class="px-6 py-4">
+                        <a href="{{ url('forge_admin:rfq_detail', pk=rfq.pk) }}"
+                           class="bg-[#1A1A2E] text-white text-xs px-3 py-1.5 rounded-lg hover:bg-gray-800 transition font-medium">
+                            Review →
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-16">
+            <div class="text-5xl mb-4">📋</div>
+            <p class="text-gray-500">No RFQs found{% if current_status %} with status "{{ current_status }}"{% endif %}.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

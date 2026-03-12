@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Review Bids — {{ rfq.short_id }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <a href="{{ url('forge_admin:rfq_detail', pk=rfq.pk) }}" class="text-sm text-gray-500 hover:text-[#E85D04]">
+            ← Back to RFQ {{ rfq.short_id }}
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900 mt-2">Review Bids</h1>
+        <p class="text-gray-500 mt-1">
+            <strong>{{ rfq.title }}</strong> — {{ bids.count() }} bid(s) received.
+            Select the best one to create a quote for the client.
+        </p>
+    </div>
+
+    {% if not bids %}
+    <div class="bg-white rounded-xl border text-center py-16">
+        <div class="text-5xl mb-4">📭</div>
+        <p class="text-gray-500">No bids have been submitted for this RFQ yet.</p>
+    </div>
+    {% else %}
+
+    <!-- Bid Comparison Cards -->
+    <div class="grid gap-5">
+        {% for bid in bids %}
+        {% set bid_colors = {
+            'SUBMITTED': 'border-gray-200',
+            'UNDER_REVIEW': 'border-yellow-300',
+            'SELECTED': 'border-green-400',
+            'NOT_SELECTED': 'border-gray-200 opacity-60',
+        } %}
+        <div class="bg-white rounded-xl shadow-sm border-2 {{ bid_colors.get(bid.status, 'border-gray-200') }} overflow-hidden
+            {% if bid.status == 'SELECTED' %}ring-2 ring-green-400{% endif %}">
+
+            {% if bid.status == 'SELECTED' %}
+            <div class="bg-green-500 text-white text-xs font-bold text-center py-1.5 tracking-wide">
+                🏆 SELECTED BID
+            </div>
+            {% endif %}
+
+            <div class="p-6">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <!-- Vendor Info -->
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-[#1A1A2E] flex items-center justify-center text-white font-bold text-sm">
+                                {{ bid.vendor.first_name[0]|upper }}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ bid.vendor.get_full_name() }}</p>
+                                <p class="text-xs text-gray-500">{{ bid.vendor.email }}</p>
+                                {% if bid.vendor.vendor_profile is defined and bid.vendor.vendor_profile %}
+                                <p class="text-xs text-gray-500">{{ bid.vendor.vendor_profile.company_name }} · {{ bid.vendor.vendor_profile.city }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Key Metrics -->
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <p class="text-2xl font-bold text-gray-900">₦{{ "{:,.0f}".format(bid.price) }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">Quoted Price</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <p class="text-2xl font-bold text-gray-900">{{ bid.timeline_days }}</p>
+                                <p class="text-xs text-gray-500 mt-0.5">Working Days</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-3 text-center">
+                                <p class="text-xs font-medium text-gray-500 mb-1">Submitted</p>
+                                <p class="text-sm font-medium text-gray-700">{{ bid.created_at.strftime('%d %b %Y') }}</p>
+                            </div>
+                        </div>
+
+                        {% if bid.notes %}
+                        <div class="bg-blue-50 rounded-lg p-4 border border-blue-100">
+                            <p class="text-xs font-semibold text-blue-600 uppercase mb-1">Vendor Notes</p>
+                            <p class="text-sm text-gray-700 leading-relaxed">{{ bid.notes }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if bid.attachments.count() %}
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            {% for att in bid.attachments.all() %}
+                            <a href="{{ att.file.url }}" target="_blank"
+                               class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 rounded-lg transition">
+                                📎 {{ att.filename }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="ml-6 flex flex-col gap-2 min-w-[140px]">
+                        {% if bid.status != 'SELECTED' %}
+                        <a href="{{ url('forge_admin:select_bid', pk=rfq.pk, bid_id=bid.pk) }}"
+                           class="bg-[#E85D04] hover:bg-orange-600 text-white text-sm px-4 py-2.5 rounded-lg font-semibold transition text-center">
+                            Select This Bid
+                        </a>
+                        {% else %}
+                        <div class="bg-green-500 text-white text-sm px-4 py-2.5 rounded-lg font-semibold text-center">
+                            ✓ Selected
+                        </div>
+                        {% endif %}
+                        <span class="text-xs text-center text-gray-400 mt-1">Bid {{ bid.short_id }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if rfq.has_quote %}
+    <div class="bg-purple-50 border border-purple-200 rounded-xl p-5 flex items-center justify-between">
+        <div>
+            <p class="font-semibold text-purple-800">A bid has been selected. Ready to send quote to client.</p>
+            <p class="text-sm text-purple-600 mt-1">Final price: ₦{{ "{:,.0f}".format(rfq.quote.final_price) }}</p>
+        </div>
+        <a href="{{ url('forge_admin:send_quote', pk=rfq.pk) }}"
+           class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition">
+            Review & Send Quote →
+        </a>
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}

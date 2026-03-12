@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Forge Africa — Admin Dashboard</h1>
+        <p class="text-gray-500 mt-1">Platform overview and operations.</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-l-blue-500">
+            <p class="text-xs text-gray-500 uppercase font-medium">Pending Review</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.pending_review }}</p>
+            <a href="{{ url('forge_admin:rfq_list') }}?status=SUBMITTED" class="text-xs text-blue-500 hover:underline mt-1 block">View RFQs →</a>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-l-yellow-500">
+            <p class="text-xs text-gray-500 uppercase font-medium">Active Bidding</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.active_bidding }}</p>
+            <a href="{{ url('forge_admin:rfq_list') }}?status=BIDDING_OPEN" class="text-xs text-yellow-600 hover:underline mt-1 block">View →</a>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-l-purple-500">
+            <p class="text-xs text-gray-500 uppercase font-medium">Awaiting Quote</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.quotes_pending }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-l-green-500">
+            <p class="text-xs text-gray-500 uppercase font-medium">Total Revenue</p>
+            <p class="text-2xl font-bold text-green-600 mt-1">₦{{ "{:,.0f}".format(stats.total_revenue) }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl p-5 shadow-sm border text-center">
+            <p class="text-3xl font-bold text-gray-900">{{ stats.total_rfqs }}</p>
+            <p class="text-sm text-gray-500 mt-1">Total RFQs</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border text-center">
+            <p class="text-3xl font-bold text-gray-900">{{ stats.verified_vendors }}<span class="text-lg text-gray-400">/{{ stats.total_vendors }}</span></p>
+            <p class="text-sm text-gray-500 mt-1">Verified Vendors</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border text-center">
+            <p class="text-3xl font-bold text-gray-900">{{ stats.total_clients }}</p>
+            <p class="text-sm text-gray-500 mt-1">Registered Clients</p>
+        </div>
+    </div>
+
+    <!-- Recent RFQs -->
+    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <div class="px-6 py-4 border-b flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-800">Recent RFQs</h2>
+            <a href="{{ url('forge_admin:rfq_list') }}" class="text-sm text-[#E85D04] hover:underline">View all →</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                    <tr>
+                        <th class="px-6 py-3 text-left">RFQ</th>
+                        <th class="px-6 py-3 text-left">Client</th>
+                        <th class="px-6 py-3 text-left">Category</th>
+                        <th class="px-6 py-3 text-left">Status</th>
+                        <th class="px-6 py-3 text-left">Submitted</th>
+                        <th class="px-6 py-3 text-left">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for rfq in recent_rfqs %}
+                    {% set color_map = {
+                        'SUBMITTED': 'bg-blue-100 text-blue-700',
+                        'APPROVED': 'bg-indigo-100 text-indigo-700',
+                        'REJECTED': 'bg-red-100 text-red-700',
+                        'BIDDING_OPEN': 'bg-yellow-100 text-yellow-700',
+                        'BIDDING_CLOSED': 'bg-orange-100 text-orange-700',
+                        'QUOTE_SENT': 'bg-purple-100 text-purple-700',
+                        'ACCEPTED': 'bg-teal-100 text-teal-700',
+                        'DEPOSIT_PAID': 'bg-green-100 text-green-700',
+                        'IN_PROGRESS': 'bg-cyan-100 text-cyan-700',
+                        'COMPLETED': 'bg-emerald-100 text-emerald-700',
+                    } %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-mono font-bold text-[#E85D04]">{{ rfq.short_id }}</td>
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-gray-900">{{ rfq.client.get_full_name() }}</p>
+                            <p class="text-xs text-gray-400">{{ rfq.client.email }}</p>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">{{ rfq.category.name }}</td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ color_map.get(rfq.status, 'bg-gray-100 text-gray-600') }}">
+                                {{ rfq.get_status_display() }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">{{ rfq.created_at.strftime('%d %b %Y') }}</td>
+                        <td class="px-6 py-4">
+                            <a href="{{ url('forge_admin:rfq_detail', pk=rfq.pk) }}"
+                               class="text-[#E85D04] hover:underline text-xs font-medium">Review →</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

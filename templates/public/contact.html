@@ -1,0 +1,159 @@
+{% extends "public/base_public.html" %}
+{% block title %}Contact Us — Forge Africa{% endblock %}
+{% block meta_desc %}Get in touch with the Forge Africa team. We're here to help clients and vendors with any questions.{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="hero-gradient pattern-bg py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+        <p class="text-sm font-semibold uppercase tracking-widest mb-4 fade-up" style="color:#F97316;">Get In Touch</p>
+        <h1 class="font-display font-800 text-white mb-4 fade-up-2" style="font-size:clamp(2rem,4vw,3rem);line-height:1.1;">
+            We're here to help
+        </h1>
+        <p class="fade-up-3 max-w-lg mx-auto" style="color:#94A3B8;line-height:1.8;">
+            Questions about an RFQ? Vendor onboarding? Platform issues? Reach out and we'll respond within 24 hours.
+        </p>
+    </div>
+</section>
+
+<!-- Contact section -->
+<section style="background:#F8FAFC;" class="py-16">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
+
+            <!-- Contact info -->
+            <div class="lg:col-span-2 space-y-6">
+                <div>
+                    <h2 class="font-display font-800 text-2xl mb-2" style="color:#0F172A;">Contact information</h2>
+                    <p class="text-sm leading-relaxed" style="color:#64748B;">
+                        Our team operates from Lagos, Nigeria. We typically respond to all inquiries within one business day.
+                    </p>
+                </div>
+
+                {% for icon, label, value, href in [
+                    ('📧', 'Email', 'hello@forgeafrica.com', 'mailto:hello@forgeafrica.com'),
+                    ('📍', 'Location', 'Lagos, Nigeria', None),
+                    ('⏰', 'Response Time', 'Within 24 business hours', None),
+                ] %}
+                <div class="rounded-xl p-5 flex items-start gap-4" style="background:white;border:1px solid #E2E8F0;">
+                    <span class="text-2xl">{{ icon }}</span>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color:#94A3B8;">{{ label }}</p>
+                        {% if href %}
+                        <a href="{{ href }}" class="font-medium hover:underline" style="color:#F97316;">{{ value }}</a>
+                        {% else %}
+                        <p class="font-medium" style="color:#0F172A;">{{ value }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Quick links -->
+                <div class="rounded-xl p-5" style="background:#0F172A;">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-white mb-4">Quick Links</p>
+                    <div class="space-y-2">
+                        {% for label, href in [
+                            ('Submit an RFQ', '/accounts/register/client/'),
+                            ('Join as a Vendor', '/accounts/register/vendor/'),
+                            ('Browse Open RFQs', '/go/rfqs/'),
+                            ('Refund Policy', '/go/refund-policy/'),
+                        ] %}
+                        <a href="{{ href }}" class="flex items-center gap-2 text-sm transition"
+                           style="color:#94A3B8;" onmouseover="this.style.color='#F97316'" onmouseout="this.style.color='#94A3B8'">
+                            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            {{ label }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact form -->
+            <div class="lg:col-span-3">
+                <div class="rounded-2xl p-8" style="background:white;border:1px solid #E2E8F0;">
+                    <h2 class="font-display font-700 text-xl mb-6" style="color:#0F172A;">Send us a message</h2>
+
+                    {% set msgs = get_messages(request) %}
+                    {% for msg in msgs %}
+                    <div class="mb-5 px-4 py-3 rounded-xl text-sm font-medium
+                        {% if 'error' in msg.tags %}border{% endif %}"
+                        style="{% if 'error' in msg.tags %}background:rgba(239,68,68,0.08);color:#DC2626;border-color:rgba(239,68,68,0.2);{% else %}background:rgba(22,163,74,0.08);color:#16A34A;border:1px solid rgba(22,163,74,0.2);{% endif %}">
+                        {{ msg }}
+                    </div>
+                    {% endfor %}
+
+                    <form method="post" action="/go/contact/" class="space-y-5">
+                        {{ csrf_input }}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-semibold mb-1.5" style="color:#374151;">
+                                    Full Name <span style="color:#F97316;">*</span>
+                                </label>
+                                <input type="text" name="name" required placeholder="Emeka Okonkwo"
+                                       class="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition"
+                                       style="border:1.5px solid #E2E8F0;color:#0F172A;background:#F8FAFC;"
+                                       onfocus="this.style.borderColor='#F97316';this.style.boxShadow='0 0 0 3px rgba(249,115,22,0.1)'"
+                                       onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-1.5" style="color:#374151;">
+                                    Email Address <span style="color:#F97316;">*</span>
+                                </label>
+                                <input type="email" name="email" required placeholder="emeka@company.com"
+                                       class="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition"
+                                       style="border:1.5px solid #E2E8F0;color:#0F172A;background:#F8FAFC;"
+                                       onfocus="this.style.borderColor='#F97316';this.style.boxShadow='0 0 0 3px rgba(249,115,22,0.1)'"
+                                       onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5" style="color:#374151;">
+                                I am a...
+                            </label>
+                            <div class="grid grid-cols-3 gap-3">
+                                {% for val, label in [('client', '🏢 Client'), ('vendor', '🏭 Vendor'), ('other', '💬 Other')] %}
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="role" value="{{ val }}" class="sr-only"
+                                           {% if val == 'client' %}checked{% endif %}
+                                           onchange="document.querySelectorAll('.role-option').forEach(e=>e.style.borderColor='#E2E8F0');this.closest('label').querySelector('.role-option').style.borderColor='#F97316'">
+                                    <div class="role-option text-center px-3 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer"
+                                         style="border:1.5px solid {% if val == 'client' %}#F97316{% else %}#E2E8F0{% endif %};background:#F8FAFC;color:#374151;">
+                                        {{ label }}
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5" style="color:#374151;">Subject</label>
+                            <input type="text" name="subject" placeholder="e.g. Question about my RFQ"
+                                   class="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition"
+                                   style="border:1.5px solid #E2E8F0;color:#0F172A;background:#F8FAFC;"
+                                   onfocus="this.style.borderColor='#F97316';this.style.boxShadow='0 0 0 3px rgba(249,115,22,0.1)'"
+                                   onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1.5" style="color:#374151;">
+                                Message <span style="color:#F97316;">*</span>
+                            </label>
+                            <textarea name="message" required rows="5"
+                                      placeholder="Tell us how we can help you..."
+                                      class="w-full px-4 py-2.5 rounded-xl text-sm outline-none transition resize-none"
+                                      style="border:1.5px solid #E2E8F0;color:#0F172A;background:#F8FAFC;"
+                                      onfocus="this.style.borderColor='#F97316';this.style.boxShadow='0 0 0 3px rgba(249,115,22,0.1)'"
+                                      onblur="this.style.borderColor='#E2E8F0';this.style.boxShadow='none'"></textarea>
+                        </div>
+                        <button type="submit"
+                                class="w-full py-3.5 rounded-xl font-semibold text-white text-sm transition hover:opacity-90"
+                                style="background:#F97316;">
+                            Send Message →
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

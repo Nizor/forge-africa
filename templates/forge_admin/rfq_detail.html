@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% block title %}RFQ {{ rfq.short_id }}{% endblock %}
+
+{% block content %}
+{% set color_map = {
+    'DRAFT': 'bg-gray-100 text-gray-600',
+    'SUBMITTED': 'bg-blue-100 text-blue-700',
+    'APPROVED': 'bg-indigo-100 text-indigo-700',
+    'REJECTED': 'bg-red-100 text-red-700',
+    'BIDDING_OPEN': 'bg-yellow-100 text-yellow-700',
+    'BIDDING_CLOSED': 'bg-orange-100 text-orange-700',
+    'QUOTE_SENT': 'bg-purple-100 text-purple-700',
+    'ACCEPTED': 'bg-teal-100 text-teal-700',
+    'DEPOSIT_PAID': 'bg-green-100 text-green-700',
+    'IN_PROGRESS': 'bg-cyan-100 text-cyan-700',
+    'COMPLETED': 'bg-emerald-100 text-emerald-700',
+    'CANCELLED': 'bg-red-100 text-red-600',
+} %}
+
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="{{ url('forge_admin:rfq_list') }}" class="text-sm text-gray-500 hover:text-[#E85D04]">← All RFQs</a>
+            <span class="text-gray-300">|</span>
+            <span class="font-mono font-bold text-[#E85D04] text-lg">{{ rfq.short_id }}</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ color_map.get(rfq.status, 'bg-gray-100 text-gray-600') }}">
+                {{ rfq.get_status_display() }}
+            </span>
+        </div>
+
+        <!-- Status update for in-flight orders -->
+        {% if rfq.status in ['DEPOSIT_PAID', 'IN_PROGRESS'] %}
+        <form method="post" action="{{ url('forge_admin:update_rfq_status', pk=rfq.pk) }}" class="flex gap-2">
+            {{ csrf_input }}
+            <select name="status" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5">
+                <option value="IN_PROGRESS" {% if rfq.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                <option value="COMPLETED">Mark Completed</option>
+                <option value="CANCELLED">Cancel</option>
+            </select>
+            <button type="submit" class="bg-[#1A1A2E] text-white text-sm px-4 py-1.5 rounded-lg hover:bg-gray-800 transition">
+                Update
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left: RFQ Details -->
+        <div class="lg:col-span-2 space-y-5">
+            <!-- Main Details Card -->
+            <div class="bg-white rounded-xl shadow-sm border p-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">{{ rfq.title }}</h2>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-medium">Category</p>
+                        <p class="font-medium mt-0.5">{{ rfq.category.icon }} {{ rfq.category.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-medium">Quantity</p>
+                        <p class="font-medium mt-0.5">{{ rfq.quantity }} unit(s)</p>
+                    </div>
+                    {% if rfq.materials %}
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-medium">Materials</p>
+                        <p class="font-medium mt-0.5">{{ rfq.materials }}</p>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-medium">Client Deadline</p>
+                        <p class="font-medium mt-0.5 text-orange-600">{{ rfq.deadline.strftime('%d %b %Y') }}</p>
+                    </div>
+                    {% if rfq.budget_min or rfq.budget_max %}
+                    <div class="col-span-2">
+                        <p class="text-xs text-gray-400 uppercase font-medium">Budget Range</p>
+                        <p class="font-medium mt-0.5 text-green-600">
+                            {% if rfq.budget_min and rfq.budget_max %}
+                                ₦{{ "{:,.0f}".format(rfq.budget_min) }} – ₦{{ "{:,.0f}".format(rfq.budget_max) }}
+                            {% elif rfq.budget_max %}
+                                Up to ₦{{ "{:,.0f}".format(rfq.budget_max) }}
+                            {% else %}
+                                From ₦{{ "{:,.0f}".format(rfq.budget_min) }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="border-t pt-4">
+                    <p class="text-xs text-gray-400 uppercase font-medium mb-1">Description</p>
+                    <p class="text-gray-700 text-sm leading-relaxed">{{ rfq.description }}</p>
+                </div>
+                {% if rfq.additional_notes %}
+                <div class="border-t pt-4 mt-4">
+                    <p class="text-xs text-gray-400 uppercase font-medium mb-1">Additional Notes</p>
+                    <p class="text-gray-700 text-sm">{{ rfq.additional_notes }}</p>
+                </div>
+                {% endif %}
+                {% if rfq.attachments.count() %}
+                <div class="border-t pt-4 mt-4">
+                    <p class="text-xs text-gray-400 uppercase font-medium mb-2">Attachments</p>
+                    <div class="flex flex-wrap gap-2">
+                        {% for att in rfq.attachments.all() %}
+                        <a href="{{ att.file.url }}" target="_blank"
+                           class="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-3 py-1.5 rounded-lg transition">
+                            📎 {{ att.filename }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Bids Section -->
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="px-6 py-4 border-b flex justify-between items-center">
+                    <h3 class="font-semibold text-gray-800">Bids Received ({{ bids.count() }})</h3>
+                    {% if rfq.status == 'BIDDING_OPEN' or rfq.status == 'BIDDING_CLOSED' %}
+                    <a href="{{ url('forge_admin:bid_review', pk=rfq.pk) }}"
+                       class="bg-[#E85D04] text-white text-xs px-4 py-1.5 rounded-lg hover:bg-orange-600 transition font-medium">
+                        Review & Select Bid →
+                    </a>
+                    {% endif %}
+                </div>
+
+                {% if bids %}
+                {% set bid_colors = {
+                    'SUBMITTED': 'bg-blue-100 text-blue-700',
+                    'UNDER_REVIEW': 'bg-yellow-100 text-yellow-700',
+                    'SELECTED': 'bg-green-100 text-green-700',
+                    'NOT_SELECTED': 'bg-gray-100 text-gray-400',
+                } %}
+                <div class="divide-y divide-gray-100">
+                    {% for bid in bids %}
+                    <div class="px-6 py-4 {% if bid.status == 'SELECTED' %}bg-green-50{% endif %}">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-medium text-gray-900">{{ bid.vendor.get_full_name() }}</p>
+                                <p class="text-xs text-gray-500">{{ bid.vendor.email }}</p>
+                                {% if bid.notes %}
+                                <p class="text-sm text-gray-600 mt-1 italic">"{{ bid.notes[:100] }}{% if bid.notes|length > 100 %}...{% endif %}"</p>
+                                {% endif %}
+                            </div>
+                            <div class="text-right ml-6">
+                                <p class="text-xl font-bold text-gray-900">₦{{ "{:,.0f}".format(bid.price) }}</p>
+                                <p class="text-xs text-gray-500">{{ bid.timeline_days }} working days</p>
+                                <span class="inline-flex mt-1 items-center px-2 py-0.5 rounded-full text-xs font-medium {{ bid_colors.get(bid.status, 'bg-gray-100') }}">
+                                    {% if bid.status == 'SELECTED' %}🏆 {% endif %}{{ bid.get_status_display() }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-10 text-gray-400 text-sm">
+                    No bids received yet.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quote Summary (if exists) -->
+            {% if rfq.has_quote %}
+            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="px-6 py-4 border-b bg-purple-50 flex justify-between items-center">
+                    <h3 class="font-semibold text-purple-800">📄 Quote</h3>
+                    {% if rfq.status == 'BIDDING_CLOSED' %}
+                    <a href="{{ url('forge_admin:send_quote', pk=rfq.pk) }}"
+                       class="bg-purple-600 text-white text-xs px-4 py-1.5 rounded-lg hover:bg-purple-700 transition font-medium">
+                        Send to Client →
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="px-6 py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-gray-500">Final Price (shown to client)</p>
+                            <p class="text-2xl font-bold text-gray-900 mt-0.5">₦{{ "{:,.0f}".format(rfq.quote.final_price) }}</p>
+                            {% if rfq.quote.admin_notes %}
+                            <p class="text-sm text-gray-600 mt-2 italic">"{{ rfq.quote.admin_notes }}"</p>
+                            {% endif %}
+                        </div>
+                        <div class="text-right text-sm text-gray-500">
+                            {% if rfq.quote.sent_to_client_at %}
+                            <p>Sent: {{ rfq.quote.sent_to_client_at.strftime('%d %b %Y, %H:%M') }}</p>
+                            {% else %}
+                            <span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-xs">Not yet sent</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Client Info + Actions -->
+        <div class="space-y-5">
+            <!-- Client Card -->
+            <div class="bg-white rounded-xl shadow-sm border p-5">
+                <h3 class="font-semibold text-gray-800 mb-3">Client</h3>
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-full bg-[#E85D04] flex items-center justify-center text-white font-bold">
+                        {{ rfq.client.first_name[0]|upper }}
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">{{ rfq.client.get_full_name() }}</p>
+                        <p class="text-xs text-gray-500">{{ rfq.client.email }}</p>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500 space-y-1 border-t pt-3">
+                    <p>Submitted: {{ rfq.created_at.strftime('%d %b %Y, %H:%M') }}</p>
+                    <p>Last updated: {{ rfq.updated_at.strftime('%d %b %Y, %H:%M') }}</p>
+                </div>
+            </div>
+
+            <!-- Approve Action -->
+            {% if rfq.status == 'SUBMITTED' %}
+            <div class="bg-white rounded-xl shadow-sm border p-5">
+                <h3 class="font-semibold text-gray-800 mb-3">✅ Approve RFQ</h3>
+                <p class="text-sm text-gray-500 mb-4">Approving will open bidding and notify all verified vendors in the <strong>{{ rfq.category.name }}</strong> category.</p>
+                <form method="post" action="{{ url('forge_admin:rfq_approve', pk=rfq.pk) }}">
+                    {{ csrf_input }}
+                    <div class="mb-3">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Bidding Deadline (optional)</label>
+                        <input type="datetime-local" name="bidding_deadline"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Internal Notes (optional)</label>
+                        <textarea name="admin_notes" rows="2"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                                  placeholder="Private notes for Forge Africa team..."></textarea>
+                    </div>
+                    <button type="submit"
+                            class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 rounded-lg transition text-sm">
+                        Approve & Open Bidding
+                    </button>
+                </form>
+            </div>
+
+            <!-- Reject Action -->
+            <div class="bg-white rounded-xl shadow-sm border p-5">
+                <h3 class="font-semibold text-gray-800 mb-3">❌ Reject RFQ</h3>
+                <form method="post" action="{{ url('forge_admin:rfq_reject', pk=rfq.pk) }}">
+                    {{ csrf_input }}
+                    <div class="mb-4">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Rejection Reason <span class="text-red-500">*</span></label>
+                        <textarea name="rejection_reason" rows="3" required
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none"
+                                  placeholder="Explain to the client why this RFQ was rejected..."></textarea>
+                    </div>
+                    <button type="submit"
+                            class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 rounded-lg transition text-sm">
+                        Reject & Notify Client
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+            {% if rfq.status == 'REJECTED' %}
+            <div class="bg-red-50 border border-red-200 rounded-xl p-5">
+                <h3 class="font-semibold text-red-700 mb-2">Rejection Reason</h3>
+                <p class="text-sm text-red-600">{{ rfq.rejection_reason }}</p>
+            </div>
+            {% endif %}
+
+            {% if rfq.bidding_deadline %}
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm">
+                <p class="font-semibold text-yellow-800">⏰ Bidding Deadline</p>
+                <p class="text-yellow-700 mt-1">{{ rfq.bidding_deadline.strftime('%d %b %Y, %H:%M') }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

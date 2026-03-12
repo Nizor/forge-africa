@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Forge Africa — Decentralized Manufacturing Platform{% endblock %}</title>
+    <meta name="description" content="{% block meta_desc %}Connect with Nigeria's best verified manufacturers. Submit RFQs, receive competitive bids, and get your products made.{% endblock %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary:   #F97316;
+            --secondary: #0F172A;
+            --accent:    #16A34A;
+            --bg:        #F8FAFC;
+            --dark:      #1E293B;
+        }
+        * { font-family: 'DM Sans', sans-serif; }
+        .font-display { font-family: 'Syne', sans-serif; }
+        html { scroll-behavior: smooth; }
+
+        /* Geometric African pattern overlay */
+        .pattern-bg {
+            background-color: var(--secondary);
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23F97316' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+        }
+        .orange-glow {
+            box-shadow: 0 0 40px rgba(249, 115, 22, 0.15);
+        }
+        .card-hover {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12);
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.6s ease forwards; }
+        .fade-up-2 { animation: fadeUp 0.6s 0.15s ease forwards; opacity: 0; }
+        .fade-up-3 { animation: fadeUp 0.6s 0.3s ease forwards; opacity: 0; }
+        .fade-up-4 { animation: fadeUp 0.6s 0.45s ease forwards; opacity: 0; }
+
+        /* Nav active state */
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -2px; left: 0;
+            width: 0; height: 2px; background: var(--primary);
+            transition: width 0.2s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body style="background-color: #F8FAFC; color: #1E293B;">
+
+<!-- Navigation -->
+<nav style="background: #0F172A;" class="sticky top-0 z-50 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo -->
+            <a href="/go/" class="flex items-center">
+                <img src="/static/img/logo_white.svg" alt="Forge Africa" class="h-9 w-auto">
+            </a>
+
+            <!-- Desktop Nav -->
+            <div class="hidden md:flex items-center gap-8">
+                <a href="/go/" class="nav-link text-gray-300 hover:text-white text-sm font-medium transition">Home</a>
+                <a href="/go/about/" class="nav-link text-gray-300 hover:text-white text-sm font-medium transition">About</a>
+                <a href="/go/rfqs/" class="nav-link text-gray-300 hover:text-white text-sm font-medium transition">Open RFQs</a>
+                <a href="/go/vendors/" class="nav-link text-gray-300 hover:text-white text-sm font-medium transition">Vendors</a>
+                <a href="/go/contact/" class="nav-link text-gray-300 hover:text-white text-sm font-medium transition">Contact</a>
+            </div>
+
+            <!-- CTA Buttons -->
+            <div class="flex items-center gap-3">
+                <a href="/accounts/login/"
+                   class="text-sm text-gray-300 hover:text-white font-medium transition hidden sm:block">
+                    Sign In
+                </a>
+                <a href="/accounts/register/client/"
+                   class="text-sm font-semibold px-4 py-2 rounded-lg transition"
+                   style="background: #F97316; color: white;">
+                    Get Started
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<!-- Footer -->
+<footer style="background: #0F172A; color: #94A3B8;" class="mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-10">
+            <div class="md:col-span-2">
+                <div class="mb-4">
+                    <img src="/static/img/logo_white.svg" alt="Forge Africa" class="h-9 w-auto">
+                </div>
+                <p class="text-sm leading-relaxed mb-4" style="color: #64748B;">
+                    Building the backbone of African manufacturing. We connect businesses with Nigeria's best verified manufacturers through a structured, transparent RFQ process.
+                </p>
+                <div class="flex gap-3">
+                    <a href="/accounts/register/client/"
+                       class="text-sm font-semibold px-4 py-2 rounded-lg"
+                       style="background: #F97316; color: white;">
+                        Submit an RFQ
+                    </a>
+                    <a href="/accounts/register/vendor/"
+                       class="text-sm font-semibold px-4 py-2 rounded-lg border"
+                       style="border-color: #334155; color: #94A3B8;">
+                        Join as Vendor
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="font-display font-700 text-white text-sm uppercase tracking-widest mb-4">Platform</h4>
+                <ul class="space-y-2.5 text-sm">
+                    <li><a href="/go/rfqs/" class="hover:text-white transition" style="color: #64748B;">Open RFQs</a></li>
+                    <li><a href="/go/vendors/" class="hover:text-white transition" style="color: #64748B;">Vendor Directory</a></li>
+                    <li><a href="/go/about/" class="hover:text-white transition" style="color: #64748B;">How It Works</a></li>
+                    <li><a href="/go/contact/" class="hover:text-white transition" style="color: #64748B;">Contact Us</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-display font-700 text-white text-sm uppercase tracking-widest mb-4">Legal</h4>
+                <ul class="space-y-2.5 text-sm">
+                    <li><a href="/go/terms/" class="hover:text-white transition" style="color: #64748B;">Terms of Service</a></li>
+                    <li><a href="/go/privacy/" class="hover:text-white transition" style="color: #64748B;">Privacy Policy</a></li>
+                    <li><a href="/go/refund-policy/" class="hover:text-white transition" style="color: #64748B;">Refund Policy</a></li>
+                    <li><a href="/go/cancellation-policy/" class="hover:text-white transition" style="color: #64748B;">Cancellation Policy</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="pt-8 flex flex-col md:flex-row justify-between items-center gap-4"
+             style="border-top: 1px solid #1E293B;">
+            <p class="text-xs" style="color: #475569;">
+                © 2025 Forge Africa. All rights reserved. Lagos, Nigeria.
+            </p>
+            <p class="text-xs" style="color: #475569;">
+                Built to power African manufacturing.
+            </p>
+        </div>
+    </div>
+</footer>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Payment Confirmed{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto text-center py-12">
+    <div class="bg-white rounded-2xl shadow-sm border p-10">
+        <div class="text-6xl mb-4">🎉</div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment Confirmed!</h1>
+        <p class="text-gray-500 mb-6">Your deposit has been received. Your project is now commencing.</p>
+
+        <div class="bg-green-50 rounded-xl p-5 text-left border border-green-200 mb-6">
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Project:</span>
+                    <span class="font-medium">{{ order.rfq.title }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Deposit Paid:</span>
+                    <span class="font-bold text-green-700">₦{{ "{:,.2f}".format(order.deposit_amount) }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Balance Due on Completion:</span>
+                    <span class="font-semibold">₦{{ "{:,.2f}".format(order.balance_due) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <a href="{{ url('clients:dashboard') }}"
+           class="w-full block bg-[#E85D04] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition text-sm">
+            Go to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

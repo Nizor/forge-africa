@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Available RFQs{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Available RFQs</h1>
+        <p class="text-gray-500 mt-1">Open requests matching your service categories.</p>
+    </div>
+
+    {% if not profile %}
+    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+        <p class="text-yellow-800 font-medium">⚠️ Complete your <a href="{{ url('vendors:profile') }}" class="underline">vendor profile</a> and select service categories to see matching RFQs.</p>
+    </div>
+    {% endif %}
+
+    {% if rfqs %}
+    <div class="grid gap-4">
+        {% for rfq in rfqs %}
+        <div class="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <span class="font-mono text-sm font-bold text-[#E85D04]">{{ rfq.short_id }}</span>
+                        <span class="text-xs bg-orange-100 text-orange-700 px-2.5 py-0.5 rounded-full font-medium">{{ rfq.category.icon }} {{ rfq.category.name }}</span>
+                        <span class="text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-medium">Bidding Open</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mt-2">{{ rfq.title }}</h3>
+                    <p class="text-gray-600 text-sm mt-1 line-clamp-2">{{ rfq.description }}</p>
+
+                    <div class="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
+                        <span>📦 Qty: <strong class="text-gray-700">{{ rfq.quantity }}</strong></span>
+                        {% if rfq.materials %}
+                        <span>🔩 Materials: <strong class="text-gray-700">{{ rfq.materials }}</strong></span>
+                        {% endif %}
+                        <span>📅 Deadline: <strong class="text-gray-700">{{ rfq.deadline.strftime('%d %b %Y') }}</strong></span>
+                        {% if rfq.budget_min or rfq.budget_max %}
+                        <span>💰 Budget:
+                            <strong class="text-gray-700">
+                                {% if rfq.budget_min and rfq.budget_max %}
+                                    ₦{{ "{:,.0f}".format(rfq.budget_min) }} – ₦{{ "{:,.0f}".format(rfq.budget_max) }}
+                                {% elif rfq.budget_max %}
+                                    Up to ₦{{ "{:,.0f}".format(rfq.budget_max) }}
+                                {% else %}
+                                    From ₦{{ "{:,.0f}".format(rfq.budget_min) }}
+                                {% endif %}
+                            </strong>
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    {% if rfq.bidding_deadline %}
+                    <p class="text-xs text-red-500 mt-2 font-medium">⏰ Bidding closes: {{ rfq.bidding_deadline.strftime('%d %b %Y, %H:%M') }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="ml-6 flex flex-col gap-2 min-w-[120px]">
+                    <a href="{{ url('vendors:bid_create', pk=rfq.pk) }}"
+                       class="bg-[#E85D04] hover:bg-orange-600 text-white text-sm px-4 py-2.5 rounded-lg font-semibold transition text-center">
+                        Submit Bid
+                    </a>
+                    <span class="text-xs text-center text-gray-400">{{ rfq.bids.count() }} bid(s) so far</span>
+                </div>
+            </div>
+
+            {% if rfq.attachments.count() %}
+            <div class="mt-4 pt-4 border-t flex gap-2 flex-wrap">
+                <span class="text-xs text-gray-500 font-medium">Attachments:</span>
+                {% for att in rfq.attachments.all() %}
+                <a href="{{ att.file.url }}" target="_blank"
+                   class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2.5 py-1 rounded-lg transition">
+                    📎 {{ att.filename }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-sm border text-center py-20">
+        <div class="text-5xl mb-4">📭</div>
+        <h3 class="text-lg font-semibold text-gray-700">No open RFQs right now</h3>
+        <p class="text-gray-400 mt-2 text-sm">Check back soon — new requests are added regularly.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

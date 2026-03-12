@@ -1,0 +1,21 @@
+{% set color_map = {
+    'DRAFT': 'bg-gray-100 text-gray-600',
+    'SUBMITTED': 'bg-blue-100 text-blue-700',
+    'APPROVED': 'bg-indigo-100 text-indigo-700',
+    'REJECTED': 'bg-red-100 text-red-700',
+    'BIDDING_OPEN': 'bg-yellow-100 text-yellow-700',
+    'BIDDING_CLOSED': 'bg-orange-100 text-orange-700',
+    'QUOTE_SENT': 'bg-purple-100 text-purple-700',
+    'ACCEPTED': 'bg-teal-100 text-teal-700',
+    'DEPOSIT_PAID': 'bg-green-100 text-green-700',
+    'IN_PROGRESS': 'bg-cyan-100 text-cyan-700',
+    'COMPLETED': 'bg-emerald-100 text-emerald-700',
+    'CANCELLED': 'bg-red-100 text-red-700',
+    'SUBMITTED': 'bg-blue-100 text-blue-700',
+    'UNDER_REVIEW': 'bg-yellow-100 text-yellow-700',
+    'SELECTED': 'bg-green-100 text-green-700',
+    'NOT_SELECTED': 'bg-gray-100 text-gray-500',
+} %}
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ color_map.get(rfq.status, 'bg-gray-100 text-gray-600') }}">
+    {{ rfq.get_status_display() }}
+</span>

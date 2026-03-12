@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Pay Deposit{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="mb-6">
+        <a href="{{ url('clients:dashboard') }}" class="text-sm text-gray-500 hover:text-[#E85D04]">← Back to Dashboard</a>
+        <h1 class="text-2xl font-bold text-gray-900 mt-2">Complete Your Deposit</h1>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border p-8 space-y-6">
+        <!-- Order Summary -->
+        <div class="bg-orange-50 rounded-xl p-5 border border-orange-200">
+            <h3 class="font-semibold text-gray-800 mb-3">Order Summary</h3>
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">RFQ:</span>
+                    <span class="font-mono font-bold text-[#E85D04]">{{ order.rfq.short_id }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Project:</span>
+                    <span class="font-medium">{{ order.rfq.title }}</span>
+                </div>
+                <div class="flex justify-between border-t border-orange-200 pt-2 mt-2">
+                    <span class="text-gray-600">Total Project Value:</span>
+                    <span class="font-semibold">₦{{ "{:,.2f}".format(order.total_amount) }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Deposit ({{ order.deposit_percentage }}%):</span>
+                    <span class="font-bold text-[#E85D04] text-lg">₦{{ "{:,.2f}".format(order.deposit_amount) }}</span>
+                </div>
+                <div class="flex justify-between text-xs text-gray-400">
+                    <span>Balance on completion:</span>
+                    <span>₦{{ "{:,.2f}".format(order.balance_due) }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{{ error }}</div>
+        {% endif %}
+
+        {% if order.status == 'DEPOSIT_PAID' %}
+        <div class="bg-green-50 border border-green-200 rounded-xl p-5 text-center">
+            <div class="text-4xl mb-2">✅</div>
+            <p class="text-green-800 font-semibold">Deposit Already Paid</p>
+            <p class="text-green-600 text-sm mt-1">Your project is in progress.</p>
+        </div>
+        {% else %}
+        <div>
+            <p class="text-sm text-gray-600 mb-4">You will be redirected to Paystack's secure payment page to complete the deposit.</p>
+            <form method="post" action="{{ url('payments:pay_deposit', order_pk=order.pk) }}">
+                {{ csrf_input }}
+                <button type="submit"
+                        class="w-full bg-[#E85D04] hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition text-base flex items-center justify-center gap-2">
+                    <span>Pay ₦{{ "{:,.2f}".format(order.deposit_amount) }} Deposit</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                </button>
+            </form>
+            <p class="text-center text-xs text-gray-400 mt-3">🔒 Secured by Paystack. Your payment details are protected.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Vendor Management{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900">Vendor Management</h1>
+        <span class="text-sm text-gray-500">{{ vendors.count() }} registered vendors</span>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+        {% if vendors %}
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                <tr>
+                    <th class="px-6 py-3 text-left">Company</th>
+                    <th class="px-6 py-3 text-left">Contact</th>
+                    <th class="px-6 py-3 text-left">Location</th>
+                    <th class="px-6 py-3 text-left">Categories</th>
+                    <th class="px-6 py-3 text-left">Status</th>
+                    <th class="px-6 py-3 text-left">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for vendor in vendors %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            {% if vendor.logo %}
+                            <img src="{{ vendor.logo.url }}" alt="Logo" class="w-8 h-8 rounded object-cover">
+                            {% else %}
+                            <div class="w-8 h-8 rounded bg-[#1A1A2E] flex items-center justify-center text-white text-xs font-bold">
+                                {{ vendor.company_name[0]|upper }}
+                            </div>
+                            {% endif %}
+                            <div>
+                                <p class="font-semibold text-gray-900">{{ vendor.company_name }}</p>
+                                {% if vendor.years_in_business %}
+                                <p class="text-xs text-gray-400">{{ vendor.years_in_business }} yrs in business</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <p class="text-gray-800">{{ vendor.user.get_full_name() }}</p>
+                        <p class="text-xs text-gray-400">{{ vendor.user.email }}</p>
+                        {% if vendor.phone %}
+                        <p class="text-xs text-gray-400">{{ vendor.phone }}</p>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-gray-600 text-sm">
+                        {{ vendor.city }}{% if vendor.state %}, {{ vendor.state }}{% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-wrap gap-1">
+                            {% for cat in vendor.service_categories.all()[:3] %}
+                            <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{{ cat.name }}</span>
+                            {% endfor %}
+                            {% if vendor.service_categories.count() > 3 %}
+                            <span class="text-xs text-gray-400">+{{ vendor.service_categories.count() - 3 }} more</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if vendor.is_verified %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                            ✅ Verified
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                            ⏳ Pending
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <form method="post" action="{{ url('forge_admin:vendor_verify', pk=vendor.pk) }}">
+                            {{ csrf_input }}
+                            <button type="submit"
+                                    class="text-xs px-3 py-1.5 rounded-lg font-medium transition
+                                    {% if vendor.is_verified %}
+                                        bg-red-50 text-red-600 hover:bg-red-100 border border-red-200
+                                    {% else %}
+                                        bg-green-50 text-green-700 hover:bg-green-100 border border-green-200
+                                    {% endif %}">
+                                {% if vendor.is_verified %}Unverify{% else %}Verify{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-16">
+            <div class="text-5xl mb-4">🏭</div>
+            <p class="text-gray-500">No vendors registered yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

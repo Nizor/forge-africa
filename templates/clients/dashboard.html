@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Client Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Welcome back, {{ request.user.first_name }} 👋</h1>
+            <p class="text-gray-500 mt-1">Manage your manufacturing requests from here.</p>
+        </div>
+        <a href="{{ url('clients:rfq_create') }}"
+           class="bg-[#E85D04] hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold text-sm transition shadow-md">
+            + Submit New RFQ
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl p-5 shadow-sm border">
+            <p class="text-sm text-gray-500">Total RFQs</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.total }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border">
+            <p class="text-sm text-gray-500">Active</p>
+            <p class="text-3xl font-bold text-blue-600 mt-1">{{ stats.active }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border">
+            <p class="text-sm text-gray-500">In Progress</p>
+            <p class="text-3xl font-bold text-orange-500 mt-1">{{ stats.in_progress }}</p>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border">
+            <p class="text-sm text-gray-500">Completed</p>
+            <p class="text-3xl font-bold text-green-600 mt-1">{{ stats.completed }}</p>
+        </div>
+    </div>
+
+    <!-- Recent RFQs Table -->
+    <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <div class="px-6 py-4 border-b flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-800">Recent RFQs</h2>
+            <a href="{{ url('clients:rfq_list') }}" class="text-sm text-[#E85D04] hover:underline">View all →</a>
+        </div>
+
+        {% if rfqs %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+                    <tr>
+                        <th class="px-6 py-3 text-left">RFQ ID</th>
+                        <th class="px-6 py-3 text-left">Title</th>
+                        <th class="px-6 py-3 text-left">Category</th>
+                        <th class="px-6 py-3 text-left">Status</th>
+                        <th class="px-6 py-3 text-left">Submitted</th>
+                        <th class="px-6 py-3 text-left">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for rfq in rfqs %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-mono font-bold text-[#E85D04]">{{ rfq.short_id }}</td>
+                        <td class="px-6 py-4 font-medium text-gray-900">{{ rfq.title }}</td>
+                        <td class="px-6 py-4 text-gray-600">{{ rfq.category.name }}</td>
+                        <td class="px-6 py-4">
+                            {% include "partials/status_badge.html" %}
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">{{ rfq.created_at.strftime('%d %b %Y') }}</td>
+                        <td class="px-6 py-4">
+                            {% if rfq.status == 'QUOTE_SENT' %}
+                                <a href="{{ url('clients:quote_review', pk=rfq.pk) }}"
+                                   class="bg-[#E85D04] text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-orange-600 transition">
+                                    Review Quote
+                                </a>
+                            {% else %}
+                                <a href="{{ url('clients:rfq_detail', pk=rfq.pk) }}"
+                                   class="text-blue-600 hover:underline text-xs">View Details</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-16">
+            <div class="text-6xl mb-4">📋</div>
+            <h3 class="text-lg font-semibold text-gray-700">No RFQs yet</h3>
+            <p class="text-gray-400 mt-2 mb-6">Submit your first manufacturing request to get started.</p>
+            <a href="{{ url('clients:rfq_create') }}"
+               class="bg-[#E85D04] hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition">
+                Submit Your First RFQ
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

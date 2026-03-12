@@ -1,0 +1,119 @@
+{% extends "public/base_public.html" %}
+
+{% block content %}
+<!-- Policy Hero -->
+<section class="hero-gradient pattern-bg py-14">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+        <p class="text-sm font-semibold uppercase tracking-widest mb-3 fade-up" style="color:#F97316;">Legal</p>
+        <h1 class="font-display font-800 text-white mb-4 fade-up-2" style="font-size:clamp(1.75rem,3.5vw,2.75rem);line-height:1.15;">
+            {% block policy_title %}Policy{% endblock %}
+        </h1>
+        <p class="fade-up-3 text-sm" style="color:#64748B;">
+            Last updated: {% block policy_date %}January 2025{% endblock %}
+        </p>
+    </div>
+</section>
+
+<!-- Policy Content -->
+<section style="background:#F8FAFC;" class="py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-10">
+
+            <!-- Table of contents sidebar -->
+            <div class="lg:col-span-1">
+                <div class="sticky top-24 rounded-2xl p-5" style="background:white;border:1px solid #E2E8F0;">
+                    <p class="text-xs font-semibold uppercase tracking-wider mb-4" style="color:#94A3B8;">On this page</p>
+                    <nav class="space-y-1 text-sm" id="toc">
+                        {% block toc %}{% endblock %}
+                    </nav>
+                </div>
+
+                <!-- Other policies -->
+                <div class="mt-4 rounded-2xl p-5" style="background:white;border:1px solid #E2E8F0;">
+                    <p class="text-xs font-semibold uppercase tracking-wider mb-4" style="color:#94A3B8;">Other Policies</p>
+                    <div class="space-y-1 text-sm">
+                        <a href="/go/terms/" class="block py-1 hover:underline" style="color:#64748B;">Terms of Service</a>
+                        <a href="/go/privacy/" class="block py-1 hover:underline" style="color:#64748B;">Privacy Policy</a>
+                        <a href="/go/refund-policy/" class="block py-1 hover:underline" style="color:#64748B;">Refund Policy</a>
+                        <a href="/go/cancellation-policy/" class="block py-1 hover:underline" style="color:#64748B;">Cancellation Policy</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <div class="lg:col-span-3">
+                <div class="rounded-2xl p-8 md:p-10" style="background:white;border:1px solid #E2E8F0;">
+                    <div class="policy-body" style="color:#374151;line-height:1.8;">
+                        {% block policy_body %}{% endblock %}
+                    </div>
+                </div>
+
+                <!-- Contact footer -->
+                <div class="mt-6 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+                     style="background:#0F172A;">
+                    <div>
+                        <p class="font-display font-700 text-white text-sm mb-1">Have questions about this policy?</p>
+                        <p class="text-xs" style="color:#64748B;">Our team is happy to clarify anything.</p>
+                    </div>
+                    <a href="/go/contact/"
+                       class="flex-shrink-0 px-5 py-2.5 rounded-xl font-semibold text-white text-sm"
+                       style="background:#F97316;">
+                        Contact Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+.policy-body h2 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #0F172A;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #F97316;
+    display: inline-block;
+}
+.policy-body h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1E293B;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+.policy-body p { margin-bottom: 1rem; font-size: 0.9rem; }
+.policy-body ul, .policy-body ol {
+    margin: 0.75rem 0 1rem 1.25rem;
+    font-size: 0.9rem;
+}
+.policy-body li { margin-bottom: 0.4rem; }
+.policy-body ul li { list-style-type: disc; }
+.policy-body ol li { list-style-type: decimal; }
+.policy-body strong { color: #0F172A; font-weight: 600; }
+.policy-body a { color: #F97316; text-decoration: underline; }
+.policy-body .highlight-box {
+    background: rgba(249,115,22,0.06);
+    border-left: 3px solid #F97316;
+    padding: 1rem 1.25rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+    margin: 1.25rem 0;
+    font-size: 0.875rem;
+}
+#toc a {
+    display: block;
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.5rem;
+    color: #64748B;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+}
+#toc a:hover { background: rgba(249,115,22,0.08); color: #F97316; }
+</style>
+{% endblock %}

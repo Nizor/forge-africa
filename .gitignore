@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.pyc
+*.pyo
+
+
+# Django
+*.log
+local_settings.py
+*.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (if using for build tools)
+node_modules/
+npm-debug.log
+
+# Coverage
+htmlcov/
+.coverage
+coverage.xml

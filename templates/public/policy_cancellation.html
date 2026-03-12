@@ -1,0 +1,103 @@
+{% extends "public/policy_base.html" %}
+{% block title %}Cancellation Policy — Forge Africa{% endblock %}
+{% block policy_title %}Cancellation Policy{% endblock %}
+{% block policy_date %}January 2025{% endblock %}
+
+{% block toc %}
+<a href="#overview">Overview</a>
+<a href="#client-cancel">Client Cancellations</a>
+<a href="#vendor-cancel">Vendor Cancellations</a>
+<a href="#forge-cancel">Forge Africa Cancellations</a>
+<a href="#rfq-cancel">RFQ Cancellations</a>
+<a href="#consequences">Consequences</a>
+<a href="#how-to-cancel">How to Cancel</a>
+{% endblock %}
+
+{% block policy_body %}
+<div class="highlight-box">
+    Cancellations affect both parties in an order. This policy is designed to protect Clients from vendor abandonment and Vendors from last-minute client withdrawals, while maintaining fairness for all.
+</div>
+
+<h2 id="overview">1. Overview</h2>
+<p>A cancellation occurs when either a Client or Vendor terminates a confirmed order before full completion. Cancellations are different from disputes about quality — this policy covers the termination of an active project.</p>
+<p>Forge Africa discourages cancellations after a project has been confirmed and a deposit paid. Repeated cancellations may result in account review or suspension.</p>
+
+<h2 id="client-cancel">2. Client Cancellations</h2>
+<h3>Before Deposit Payment</h3>
+<p>A Client may cancel an RFQ or reject a quote at any time before making a deposit payment with no penalty.</p>
+<h3>Within 24 Hours of Deposit</h3>
+<p>If the Client cancels within 24 hours of paying the deposit, and the Vendor has not yet commenced any work, a full deposit refund will be issued. Please note that "work commenced" means the Vendor has begun any preparatory, procurement, or production activity.</p>
+<h3>After Work Has Commenced</h3>
+<p>Cancellation after work has commenced will result in a partial refund based on work completed. See our <a href="/go/refund-policy/">Refund Policy</a> for the calculation methodology. Forge Africa's determination of work completion percentage is final.</p>
+<h3>After Substantial Completion</h3>
+<p>Cancellations where the project is more than 70% complete (as assessed by Forge Africa) are not eligible for a deposit refund. The Client is expected to accept and pay for the work completed.</p>
+
+<h2 id="vendor-cancel">3. Vendor Cancellations</h2>
+<p>Vendors are expected to fulfil every order they accept. Vendor cancellations are treated seriously and may result in:</p>
+<ul>
+    <li>A <strong>full refund</strong> of the Client's deposit at no cost to the Client</li>
+    <li>A <strong>formal warning</strong> on the Vendor's account</li>
+    <li><strong>Temporary or permanent suspension</strong> from the Platform, depending on the severity and frequency</li>
+    <li>Potential liability for costs incurred by Forge Africa in sourcing an emergency replacement Vendor</li>
+</ul>
+<h3>Acceptable Vendor Cancellation Reasons</h3>
+<p>In exceptional circumstances, a Vendor may request a cancellation for:</p>
+<ul>
+    <li>Force majeure events (floods, fire, severe equipment failure)</li>
+    <li>Incorrect or materially misleading RFQ specifications that make the project undeliverable as quoted</li>
+    <li>Health or safety concerns that make production dangerous</li>
+</ul>
+<p>All such requests must be submitted to Forge Africa with supporting documentation within 24 hours of the issue arising.</p>
+
+<h2 id="forge-cancel">4. Cancellations by Forge Africa</h2>
+<p>Forge Africa reserves the right to cancel any order or RFQ where:</p>
+<ul>
+    <li>Fraudulent activity or misrepresentation is detected</li>
+    <li>The project violates our Terms of Service or applicable law</li>
+    <li>Neither party responds to Forge Africa communications for more than 10 business days</li>
+    <li>The project cannot be safely or legally completed</li>
+</ul>
+<p>In such cases, Forge Africa will issue appropriate refunds at its discretion after reviewing the circumstances of each case.</p>
+
+<h2 id="rfq-cancel">5. RFQ Cancellations (Before Vendor Selection)</h2>
+<p>Clients may cancel an RFQ at any point before accepting a quote with no penalty and no fee. If an RFQ has active bids, Forge Africa will notify affected Vendors of the cancellation.</p>
+<p>Repeated cancellation of RFQs (more than 3 in a 90-day period) may trigger an account review, as this disrupts the experience for bidding Vendors.</p>
+
+<h2 id="consequences">6. Consequences of Cancellation</h2>
+<table style="width:100%;border-collapse:collapse;font-size:0.875rem;margin:1rem 0;">
+    <thead>
+        <tr style="background:#F1F5F9;">
+            <th style="padding:10px;text-align:left;color:#0F172A;font-weight:600;border:1px solid #E2E8F0;">Scenario</th>
+            <th style="padding:10px;text-align:left;color:#0F172A;font-weight:600;border:1px solid #E2E8F0;">Client Impact</th>
+            <th style="padding:10px;text-align:left;color:#0F172A;font-weight:600;border:1px solid #E2E8F0;">Vendor Impact</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for scenario, client, vendor in [
+            ('Client cancels before deposit', 'No penalty', 'None'),
+            ('Client cancels within 24hrs of deposit', 'Full refund', 'Notified, no penalty'),
+            ('Client cancels mid-project', 'Partial refund', 'Paid for work completed'),
+            ('Client cancels 70%+ complete', 'No refund', 'Paid for work completed'),
+            ('Vendor cancels (no valid reason)', 'Full refund', 'Warning / suspension'),
+            ('Forge Africa cancels (fraud)', 'Case-by-case refund', 'Account suspension'),
+        ] %}
+        <tr>
+            <td style="padding:10px;border:1px solid #E2E8F0;color:#374151;">{{ scenario }}</td>
+            <td style="padding:10px;border:1px solid #E2E8F0;color:#374151;">{{ client }}</td>
+            <td style="padding:10px;border:1px solid #E2E8F0;color:#374151;">{{ vendor }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2 id="how-to-cancel">7. How to Request a Cancellation</h2>
+<p>To cancel an active order or RFQ:</p>
+<ol>
+    <li>Log in to your Forge Africa account</li>
+    <li>Navigate to the relevant RFQ or Order</li>
+    <li>If the cancellation option is available, use it directly</li>
+    <li>For orders with an active deposit, email <a href="mailto:hello@forgeafrica.com">hello@forgeafrica.com</a> with subject <strong>"Cancellation Request — [RFQ ID]"</strong> and the reason for cancellation</li>
+    <li>Our team will confirm the cancellation and applicable refund within 3 business days</li>
+</ol>
+<p>We strongly encourage all parties to attempt resolution before cancellation. Contact <a href="mailto:hello@forgeafrica.com">hello@forgeafrica.com</a> for mediation support.</p>
+{% endblock %}

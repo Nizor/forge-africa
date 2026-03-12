@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Active Work Orders{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Active Work Orders</h1>
+        <p class="text-gray-500 mt-1">Projects where client deposit has been paid — ready to start.</p>
+    </div>
+
+    {% set status_colors = {
+        'DEPOSIT_PAID': 'bg-green-100 text-green-700',
+        'IN_PROGRESS': 'bg-cyan-100 text-cyan-700',
+        'COMPLETED': 'bg-emerald-100 text-emerald-700',
+    } %}
+
+    {% if orders %}
+    <div class="space-y-5">
+        {% for order in orders %}
+        {% set rfq = order.rfq %}
+        <div class="bg-white rounded-xl shadow-sm border overflow-hidden
+            {% if order.status == 'DEPOSIT_PAID' %}border-l-4 border-l-green-500{% endif %}">
+
+            {% if order.status == 'DEPOSIT_PAID' %}
+            <div class="bg-green-500 text-white text-xs font-bold px-4 py-1.5 flex items-center gap-2">
+                🚀 DEPOSIT RECEIVED — PLEASE COMMENCE WORK
+            </div>
+            {% endif %}
+
+            <div class="p-6">
+                <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 flex-wrap mb-1">
+                            <span class="font-mono text-sm font-bold text-[#E85D04]">{{ rfq.short_id }}</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ status_colors.get(order.status, 'bg-gray-100 text-gray-600') }}">
+                                {{ order.get_status_display() }}
+                            </span>
+                            <span class="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">{{ rfq.category.name }}</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">{{ rfq.title }}</h3>
+                        <p class="text-sm text-gray-500 mt-1 leading-relaxed line-clamp-2">{{ rfq.description }}</p>
+                    </div>
+                    <div class="text-right ml-6">
+                        <p class="text-xs text-gray-400">Your Bid Value</p>
+                        <p class="text-2xl font-black text-gray-900">₦{{ "{:,.0f}".format(rfq.quote.selected_bid.price|float) }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ rfq.quote.selected_bid.timeline_days }} working days</p>
+                    </div>
+                </div>
+
+                <!-- Project Details Grid -->
+                <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-400 uppercase font-medium">Quantity</p>
+                        <p class="font-semibold text-gray-800 mt-0.5">{{ rfq.quantity }} unit(s)</p>
+                    </div>
+                    {% if rfq.materials %}
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-400 uppercase font-medium">Materials</p>
+                        <p class="font-semibold text-gray-800 mt-0.5">{{ rfq.materials }}</p>
+                    </div>
+                    {% endif %}
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-400 uppercase font-medium">Client Deadline</p>
+                        <p class="font-semibold text-orange-600 mt-0.5">{{ rfq.deadline.strftime('%d %b %Y') }}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-xs text-gray-400 uppercase font-medium">Deposit Paid</p>
+                        <p class="font-semibold text-green-600 mt-0.5">{{ order.created_at.strftime('%d %b %Y') }}</p>
+                    </div>
+                </div>
+
+                {% if rfq.description %}
+                <div class="mt-4 pt-4 border-t">
+                    <p class="text-xs text-gray-400 uppercase font-medium mb-1">Full Brief</p>
+                    <p class="text-sm text-gray-700 leading-relaxed">{{ rfq.description }}</p>
+                </div>
+                {% endif %}
+
+                {% if rfq.additional_notes %}
+                <div class="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p class="text-xs font-semibold text-yellow-700 uppercase mb-1">Client Notes</p>
+                    <p class="text-sm text-yellow-800">{{ rfq.additional_notes }}</p>
+                </div>
+                {% endif %}
+
+                {% if rfq.attachments.count() %}
+                <div class="mt-3 pt-3 border-t">
+                    <p class="text-xs text-gray-400 uppercase font-medium mb-2">Project Files</p>
+                    <div class="flex flex-wrap gap-2">
+                        {% for att in rfq.attachments.all() %}
+                        <a href="{{ att.file.url }}" target="_blank"
+                           class="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs px-3 py-1.5 rounded-lg transition">
+                            📎 {{ att.filename }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Contact + Status footer -->
+                <div class="mt-4 pt-4 border-t flex justify-between items-center flex-wrap gap-3">
+                    <div class="text-sm text-gray-500">
+                        Questions? Contact Forge Africa:
+                        <a href="mailto:{{ admin_email }}" class="text-[#E85D04] hover:underline font-medium">{{ admin_email }}</a>
+                    </div>
+                    {% if order.status == 'DEPOSIT_PAID' %}
+                    <span class="text-xs bg-green-50 border border-green-200 text-green-700 px-3 py-1.5 rounded-lg font-medium">
+                        ✅ Ready to start — deposit confirmed
+                    </span>
+                    {% elif order.status == 'IN_PROGRESS' %}
+                    <span class="text-xs bg-cyan-50 border border-cyan-200 text-cyan-700 px-3 py-1.5 rounded-lg font-medium">
+                        🔨 Work in progress
+                    </span>
+                    {% elif order.status == 'COMPLETED' %}
+                    <span class="text-xs bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg font-medium">
+                        🏆 Completed
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="bg-white rounded-xl border text-center py-20">
+        <div class="text-5xl mb-4">📦</div>
+        <h3 class="text-lg font-semibold text-gray-700">No active work orders</h3>
+        <p class="text-gray-400 mt-2 text-sm">Work orders appear here once a client pays their deposit.</p>
+        <a href="{{ url('vendors:rfq_list') }}"
+           class="inline-block mt-5 bg-[#E85D04] text-white px-6 py-2.5 rounded-lg font-medium text-sm hover:bg-orange-600 transition">
+            Browse Open RFQs
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

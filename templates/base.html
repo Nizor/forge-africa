@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Forge Africa{% endblock %} | Forge Africa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forge: {
+                            orange: '#E85D04',
+                            dark: '#1A1A2E',
+                            light: '#FFF3E0',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .status-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+    {% if request.user.is_authenticated %}
+    <!-- Top Navigation -->
+    <nav class="bg-[#1A1A2E] text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <a href="/" class="flex items-center">
+                        <img src="/static/img/logo_white.svg" alt="Forge Africa" class="h-8 w-auto">
+                    </a>
+                    {% if request.user.is_client %}
+                        <span class="text-xs bg-blue-600 px-2 py-0.5 rounded-full">Client</span>
+                    {% elif request.user.is_vendor %}
+                        <span class="text-xs bg-green-600 px-2 py-0.5 rounded-full">Vendor</span>
+                    {% elif request.user.is_forge_admin %}
+                        <span class="text-xs bg-[#E85D04] px-2 py-0.5 rounded-full">Admin</span>
+                    {% endif %}
+                </div>
+
+                <!-- Nav Links -->
+                <div class="hidden md:flex items-center space-x-6">
+                    {% if request.user.is_client %}
+                        <a href="{{ url('clients:dashboard') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">Dashboard</a>
+                        <a href="{{ url('clients:rfq_list') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">My RFQs</a>
+                        <a href="{{ url('clients:rfq_create') }}" class="bg-[#E85D04] hover:bg-orange-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition">+ New RFQ</a>
+                        <a href="{{ url('clients:orders') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">Orders</a>
+                    {% elif request.user.is_vendor %}
+                        <a href="{{ url('vendors:dashboard') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">Dashboard</a>
+                        <a href="{{ url('vendors:rfq_list') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">Available RFQs</a>
+                        <a href="{{ url('vendors:bid_list') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">My Bids</a>
+                        <a href="{{ url('vendors:orders') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">Work Orders</a>
+                        <a href="{{ url('vendors:profile') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">Profile</a>
+                    {% elif request.user.is_forge_admin %}
+                        <a href="{{ url('forge_admin:dashboard') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">Dashboard</a>
+                        <a href="{{ url('forge_admin:rfq_list') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">RFQs</a>
+                        <a href="{{ url('forge_admin:vendor_list') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">Vendors</a>
+                        <a href="{{ url('forge_admin:settings') }}" class="text-gray-300 hover:text-[#E85D04] transition text-sm">Settings</a>
+                    {% endif %}
+                </div>
+
+                <!-- Right side: notifications + user menu -->
+                <div class="flex items-center space-x-4">
+                    <!-- Notifications Bell -->
+                    {% set unread_notifs = get_unread_notifications(request.user) %}
+                    <div class="relative">
+                        <button onclick="event.stopPropagation(); toggleDropdown('notif-dropdown')"
+                                class="relative text-gray-300 hover:text-white p-1">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            {% if unread_notifs %}
+                            <span class="absolute -top-1 -right-1 bg-[#E85D04] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                                {{ unread_notifs|length }}
+                            </span>
+                            {% endif %}
+                        </button>
+                        <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border z-50">
+                            <div class="p-3 border-b flex justify-between items-center">
+                                <span class="font-semibold text-gray-800 text-sm">Notifications</span>
+                                {% if unread_notifs %}
+                                <form method="post" action="{{ url('notifications:mark_all_read') }}">
+                                    {{ csrf_input }}
+                                    <button type="submit" class="text-xs text-[#E85D04] hover:underline">Mark all read</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            <div class="max-h-64 overflow-y-auto">
+                                {% if unread_notifs %}
+                                    {% for notif in unread_notifs %}
+                                    <form method="post" action="{{ url('notifications:mark_read', pk=notif.pk) }}">
+                                        {{ csrf_input }}
+                                        <button type="submit" class="w-full text-left px-4 py-3 hover:bg-gray-50 border-b text-sm">
+                                            <p class="text-gray-800">{{ notif.message }}</p>
+                                            <p class="text-xs text-gray-400 mt-1">{{ notif.created_at.strftime('%d %b %Y, %H:%M') }}</p>
+                                        </button>
+                                    </form>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-center text-gray-400 text-sm py-6">No new notifications</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="relative">
+                        <button onclick="event.stopPropagation(); toggleDropdown('user-menu')"
+                                class="flex items-center space-x-2 text-gray-300 hover:text-white transition">
+                            <div class="w-8 h-8 rounded-full bg-[#E85D04] flex items-center justify-center text-white font-bold text-sm">
+                                {{ request.user.first_name[0]|upper }}
+                            </div>
+                            <span class="text-sm hidden md:block">{{ request.user.first_name }}</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div id="user-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border z-50">
+                            <div class="p-3 border-b">
+                                <p class="text-sm font-semibold text-gray-800">{{ request.user.get_full_name() }}</p>
+                                <p class="text-xs text-gray-400">{{ request.user.email }}</p>
+                            </div>
+                            <a href="{{ url('accounts:logout') }}"
+                               class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition rounded-b-xl">
+                                Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    {% block messages %}
+    {% set message_list = get_messages(request) %}{% if message_list %}
+    <div class="max-w-7xl mx-auto px-4 pt-4">
+        {% for message in message_list %}
+        <div class="mb-2 px-4 py-3 rounded-lg text-sm font-medium flex justify-between items-center
+            {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200
+            {% elif message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200
+            {% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200
+            {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+            <span>{{ message }}</span>
+            <button onclick="this.parentElement.remove()" class="ml-4 opacity-60 hover:opacity-100 text-lg leading-none">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endblock %}
+
+    <!-- Main Content -->
+    <main class="{% block main_class %}max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8{% endblock %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#1A1A2E] text-gray-400 text-center text-sm py-6 mt-16">
+        <p>© {{ now().year }} <span class="text-[#E85D04] font-bold">Forge Africa</span> — Building the Backbone of African Manufacturing</p>
+    </footer>
+
+    <script>
+        function toggleDropdown(id) {
+            const target = document.getElementById(id);
+            const allDropdowns = ['notif-dropdown', 'user-menu'];
+            // Close all others first
+            allDropdowns.forEach(otherId => {
+                if (otherId !== id) {
+                    const el = document.getElementById(otherId);
+                    if (el) el.classList.add('hidden');
+                }
+            });
+            // Toggle the target
+            if (target) target.classList.toggle('hidden');
+        }
+
+        // Close all dropdowns on outside click
+        document.addEventListener('click', function() {
+            ['notif-dropdown', 'user-menu'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

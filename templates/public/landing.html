@@ -1,0 +1,264 @@
+{% extends "public/base_public.html" %}
+{% block title %}Forge Africa — Nigeria's Manufacturing RFQ Platform{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="hero-gradient pattern-bg relative overflow-hidden">
+    <!-- Decorative shapes -->
+    <div class="absolute top-0 right-0 w-96 h-96 rounded-full opacity-5" style="background: #F97316; transform: translate(30%, -30%);"></div>
+    <div class="absolute bottom-0 left-0 w-64 h-64 rounded-full opacity-5" style="background: #16A34A; transform: translate(-30%, 30%);"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 fade-up"
+                     style="background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3); color: #FB923C;">
+                    <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
+                    Africa's #1 Manufacturing Marketplace
+                </div>
+
+                <h1 class="font-display font-800 text-white leading-tight mb-6 fade-up-2"
+                    style="font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1;">
+                    Source. Bid.<br>
+                    <span style="color: #F97316;">Manufacture.</span>
+                </h1>
+
+                <p class="text-lg mb-8 fade-up-3 max-w-lg" style="color: #94A3B8; line-height: 1.7;">
+                    Submit your manufacturing request in minutes. Receive competitive bids from Africa's best verified vendors. Pay securely. Get it made.
+                </p>
+
+                <div class="flex flex-wrap gap-4 mb-10 fade-up-4">
+                    <a href="/accounts/register/client/"
+                       class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-white transition-all hover:scale-105"
+                       style="background: #F97316; box-shadow: 0 4px 24px rgba(249,115,22,0.4);">
+                        Submit an RFQ Free
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </a>
+                    <a href="/accounts/register/vendor/"
+                       class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-semibold transition-all"
+                       style="border: 1.5px solid #334155; color: #CBD5E1; background: rgba(255,255,255,0.04);">
+                        Join as a Vendor
+                    </a>
+                </div>
+
+                <!-- Trust badges -->
+                <div class="flex flex-wrap gap-6 fade-up-4" style="color: #64748B;">
+                    <div class="flex items-center gap-2 text-sm">
+                        <svg class="w-4 h-4" style="color: #16A34A;" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Verified Vendors Only
+                    </div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <svg class="w-4 h-4" style="color: #16A34A;" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Secured Payments
+                    </div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <svg class="w-4 h-4" style="color: #16A34A;" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        No Hidden Fees
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats panel -->
+            <div class="relative">
+                <div class="rounded-2xl p-8 orange-glow"
+                     style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);">
+                    <h3 class="font-display font-700 text-white mb-6 text-lg">Platform at a glance</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="rounded-xl p-5" style="background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.2);">
+                            <p class="text-3xl font-display font-800" style="color: #F97316;">{{ stats.rfqs }}+</p>
+                            <p class="text-sm mt-1" style="color: #94A3B8;">RFQs Processed</p>
+                        </div>
+                        <div class="rounded-xl p-5" style="background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.2);">
+                            <p class="text-3xl font-display font-800" style="color: #16A34A;">{{ stats.vendors }}+</p>
+                            <p class="text-sm mt-1" style="color: #94A3B8;">Verified Vendors</p>
+                        </div>
+                    </div>
+                    <div class="rounded-xl p-5 mb-4" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);">
+                        <p class="text-2xl font-display font-800 text-white">{{ stats.categories }}</p>
+                        <p class="text-sm mt-1" style="color: #94A3B8;">Manufacturing Categories</p>
+                    </div>
+
+                    <!-- Categories pill list -->
+                    <div class="flex flex-wrap gap-2">
+                        {% for cat in categories[:6] %}
+                        <span class="text-xs px-2.5 py-1 rounded-full"
+                              style="background: rgba(255,255,255,0.06); color: #94A3B8; border: 1px solid rgba(255,255,255,0.08);">
+                            {{ cat.icon }} {{ cat.name }}
+                        </span>
+                        {% endfor %}
+                        {% if categories|length > 6 %}
+                        <span class="text-xs px-2.5 py-1 rounded-full" style="background: rgba(249,115,22,0.1); color: #FB923C;">
+                            +{{ categories|length - 6 }} more
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section style="background: #F8FAFC;" class="py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-14">
+            <p class="text-sm font-semibold uppercase tracking-widest mb-3" style="color: #F97316;">Simple Process</p>
+            <h2 class="font-display font-800 text-3xl md:text-4xl" style="color: #0F172A;">
+                From idea to manufactured — in days
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {% set steps = [
+                ('01', '📋', 'Submit Your RFQ', 'Describe your product, quantity, materials, and deadline. Upload design files if you have them.'),
+                ('02', '🔍', 'Vendors Bid', 'Verified manufacturers in your category submit competitive bids within 48 hours.'),
+                ('03', '✅', 'Review & Accept', 'We curate the best quote for you. Review, accept, and pay a secure 30% deposit to begin.'),
+                ('04', '🏭', 'Get It Made', 'Your selected vendor commences production. Balance paid on delivery.'),
+            ] %}
+            {% for num, icon, title, desc in steps %}
+            <div class="relative card-hover">
+                {% if not loop.last %}
+                <div class="hidden md:block absolute top-8 left-full w-full h-0.5 -translate-y-px z-0" style="background: linear-gradient(to right, #E2E8F0, transparent);"></div>
+                {% endif %}
+                <div class="rounded-2xl p-6 relative z-10 h-full" style="background: white; border: 1px solid #E2E8F0;">
+                    <div class="flex items-center gap-3 mb-4">
+                        <span class="font-display font-800 text-5xl opacity-10" style="color: #F97316; line-height: 1;">{{ num }}</span>
+                        <span class="text-3xl">{{ icon }}</span>
+                    </div>
+                    <h3 class="font-display font-700 text-lg mb-2" style="color: #0F172A;">{{ title }}</h3>
+                    <p class="text-sm leading-relaxed" style="color: #64748B;">{{ desc }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-10">
+            <a href="/accounts/register/client/"
+               class="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-semibold text-white"
+               style="background: #F97316;">
+                Start Your First RFQ — It's Free
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Service Categories -->
+<section style="background: #0F172A;" class="py-20 pattern-bg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-14">
+            <p class="text-sm font-semibold uppercase tracking-widest mb-3" style="color: #F97316;">What We Cover</p>
+            <h2 class="font-display font-800 text-3xl md:text-4xl text-white">
+                Manufacturing Services
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {% for cat in categories %}
+            <a href="/go/rfqs/?category={{ cat.slug }}"
+               class="group rounded-xl p-5 transition-all card-hover"
+               style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);">
+                <div class="text-3xl mb-3">{{ cat.icon }}</div>
+                <h3 class="font-display font-700 text-white text-sm group-hover:text-orange-400 transition">{{ cat.name }}</h3>
+                {% if cat.description %}
+                <p class="text-xs mt-1 leading-relaxed" style="color: #64748B;">{{ cat.description[:60] }}{% if cat.description|length > 60 %}...{% endif %}</p>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- For Vendors CTA -->
+<section style="background: #F8FAFC;" class="py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="rounded-3xl overflow-hidden" style="background: #1E293B;">
+            <div class="grid grid-cols-1 md:grid-cols-2">
+                <div class="p-10 md:p-14">
+                    <p class="text-sm font-semibold uppercase tracking-widest mb-3" style="color: #F97316;">For Manufacturers</p>
+                    <h2 class="font-display font-800 text-3xl md:text-4xl text-white mb-5">
+                        Grow your business with steady orders
+                    </h2>
+                    <p class="mb-8 leading-relaxed" style="color: #94A3B8;">
+                        Join Forge Africa's verified vendor network. Get notified when new RFQs match your capabilities. Submit bids, win projects, and scale your manufacturing business.
+                    </p>
+                    <ul class="space-y-3 mb-8">
+                        {% for item in ['Access to new RFQs daily', 'No bidding fees — ever', 'Secure payment guaranteed', 'Direct client communication'] %}
+                        <li class="flex items-center gap-3 text-sm" style="color: #CBD5E1;">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background: rgba(22,163,74,0.2);">
+                                <svg class="w-3 h-3" style="color: #16A34A;" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
+                                </svg>
+                            </span>
+                            {{ item }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <a href="/accounts/register/vendor/"
+                       class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-white transition-all hover:scale-105"
+                       style="background: #16A34A; box-shadow: 0 4px 24px rgba(22,163,74,0.3);">
+                        Apply as a Vendor
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="p-10 md:p-14 flex items-center" style="background: rgba(249,115,22,0.06); border-left: 1px solid rgba(249,115,22,0.15);">
+                    <div class="space-y-4 w-full">
+                        {% set vendor_stats = [
+                            ('📈', 'Avg. bids per RFQ', '4–8'),
+                            ('⏱️', 'RFQ response window', '48 hrs'),
+                            ('💰', 'Deposit secured upfront', '20–50%'),
+                            ('🔒', 'Payment protection', '100%'),
+                        ] %}
+                        {% for icon, label, value in vendor_stats %}
+                        <div class="rounded-xl p-4 flex items-center justify-between"
+                             style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl">{{ icon }}</span>
+                                <p class="text-sm" style="color: #94A3B8;">{{ label }}</p>
+                            </div>
+                            <p class="font-display font-700 text-white">{{ value }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Final CTA -->
+<section style="background: #F97316;" class="py-16">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <h2 class="font-display font-800 text-3xl md:text-4xl text-white mb-5">
+            Ready to source smarter?
+        </h2>
+        <p class="text-orange-100 mb-8 text-lg">
+            Join hundreds of businesses already using Forge Africa to source quality manufacturing in Nigeria.
+        </p>
+        <div class="flex flex-wrap gap-4 justify-center">
+            <a href="/accounts/register/client/"
+               class="px-8 py-3.5 rounded-xl font-semibold transition-all hover:scale-105"
+               style="background: white; color: #F97316;">
+                Submit an RFQ Free
+            </a>
+            <a href="/go/about/"
+               class="px-8 py-3.5 rounded-xl font-semibold transition-all"
+               style="border: 2px solid rgba(255,255,255,0.4); color: white;">
+                Learn More
+            </a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

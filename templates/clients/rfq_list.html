@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}My RFQs{% endblock %}
+
+{% block content %}
+{% set color_map = {
+    'DRAFT': 'bg-gray-100 text-gray-600',
+    'SUBMITTED': 'bg-blue-100 text-blue-700',
+    'APPROVED': 'bg-indigo-100 text-indigo-700',
+    'REJECTED': 'bg-red-100 text-red-700',
+    'BIDDING_OPEN': 'bg-yellow-100 text-yellow-700',
+    'BIDDING_CLOSED': 'bg-orange-100 text-orange-700',
+    'QUOTE_SENT': 'bg-purple-100 text-purple-700',
+    'ACCEPTED': 'bg-teal-100 text-teal-700',
+    'DEPOSIT_PAID': 'bg-green-100 text-green-700',
+    'IN_PROGRESS': 'bg-cyan-100 text-cyan-700',
+    'COMPLETED': 'bg-emerald-100 text-emerald-700',
+    'CANCELLED': 'bg-red-100 text-red-600',
+} %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900">My RFQs</h1>
+        <a href="{{ url('clients:rfq_create') }}"
+           class="bg-[#E85D04] hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition">
+            + New RFQ
+        </a>
+    </div>
+
+    <!-- Filter -->
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ url('clients:rfq_list') }}"
+           class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if not current_status %}bg-[#1A1A2E] text-white{% else %}bg-white border text-gray-600 hover:bg-gray-50{% endif %}">
+            All
+        </a>
+        {% for value, label in status_choices %}
+        <a href="{{ url('clients:rfq_list') }}?status={{ value }}"
+           class="px-3 py-1.5 rounded-lg text-sm font-medium transition {% if current_status == value %}bg-[#E85D04] text-white{% else %}bg-white border text-gray-600 hover:bg-gray-50{% endif %}">
+            {{ label }}
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if rfqs %}
+    <div class="space-y-4">
+        {% for rfq in rfqs %}
+        <div class="bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 flex-wrap mb-1">
+                        <span class="font-mono text-sm font-bold text-[#E85D04]">{{ rfq.short_id }}</span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ color_map.get(rfq.status, 'bg-gray-100 text-gray-600') }}">
+                            {{ rfq.get_status_display() }}
+                        </span>
+                        <span class="text-xs text-gray-400">{{ rfq.category.name }}</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">{{ rfq.title }}</h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Qty: {{ rfq.quantity }} · Deadline: {{ rfq.deadline.strftime('%d %b %Y') }} · Submitted {{ rfq.created_at.strftime('%d %b %Y') }}
+                    </p>
+                    {% if rfq.status == 'REJECTED' and rfq.rejection_reason %}
+                    <p class="text-xs text-red-600 mt-1 bg-red-50 px-2 py-1 rounded">
+                        Rejected: {{ rfq.rejection_reason[:100] }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="ml-4 flex flex-col gap-2 items-end">
+                    {% if rfq.status == 'QUOTE_SENT' %}
+                    <a href="{{ url('clients:quote_review', pk=rfq.pk) }}"
+                       class="bg-[#E85D04] text-white text-xs px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition whitespace-nowrap">
+                        Review Quote →
+                    </a>
+                    {% else %}
+                    <a href="{{ url('clients:rfq_detail', pk=rfq.pk) }}"
+                       class="text-[#E85D04] hover:underline text-sm font-medium">View Details</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl border text-center py-16">
+        <div class="text-5xl mb-4">📋</div>
+        <h3 class="text-lg font-semibold text-gray-700">No RFQs found</h3>
+        <p class="text-gray-400 mt-2 mb-6 text-sm">
+            {% if current_status %}No RFQs with this status.{% else %}You haven't submitted any RFQs yet.{% endif %}
+        </p>
+        <a href="{{ url('clients:rfq_create') }}"
+           class="bg-[#E85D04] text-white px-6 py-2.5 rounded-lg font-medium text-sm hover:bg-orange-600 transition">
+            Submit Your First RFQ
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
