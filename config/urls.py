@@ -16,9 +16,6 @@ urlpatterns = [
 
     path('go/', include('apps.public.urls')),
 
-    # ONE-TIME SETUP — remove after creating admin
-    path('setup/create-admin/', __import__('apps.accounts.setup_views', fromlist=['CreateFirstAdminView']).CreateFirstAdminView.as_view(), name='setup_create_admin'),
-
     # Root redirect — authenticated users go to dashboard
     path('', HomeRedirectView.as_view(), name='home'),
 ]
