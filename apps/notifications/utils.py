@@ -1,4 +1,3 @@
-from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
 
@@ -27,43 +26,38 @@ def notify_admins(message, link=''):
 
 def send_email(to_email, subject, message, html_message=None):
     """
-    Send email in a background thread so it never blocks a web request.
-    SMTP connection hangs are completely isolated from the user experience.
+    Send email via SendGrid HTTP API (port 443 — never blocked).
+    Falls back to console if no API key is set.
+    Runs in background thread so it never blocks a web request.
     """
     import threading
 
     def _send():
-        from django.core.mail import get_connection
+        if not settings.SENDGRID_API_KEY:
+            # No key — print to console (development without SendGrid)
+            print(f'\n[EMAIL CONSOLE]')
+            print(f'  To:      {to_email}')
+            print(f'  Subject: {subject}')
+            print(f'  Body:    {message[:200]}')
+            return
         try:
-            if settings.SENDGRID_API_KEY:
-                port = getattr(settings, 'EMAIL_PORT', 2525)
-                use_tls = port != 465
-                use_ssl = port == 465
-                connection = get_connection(
-                    backend='django.core.mail.backends.smtp.EmailBackend',
-                    host='smtp.sendgrid.net',
-                    port=port,
-                    username='apikey',
-                    password=settings.SENDGRID_API_KEY,
-                    use_tls=use_tls,
-                    use_ssl=use_ssl,
-                    fail_silently=False,
-                    timeout=15,
-                )
-            else:
-                connection = get_connection(
-                    backend='django.core.mail.backends.console.EmailBackend',
-                )
-            send_mail(
-                subject=subject,
-                message=message,
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail, Content, MimeType
+            sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+            mail = Mail(
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[to_email],
-                html_message=html_message or message,
-                connection=connection,
-                fail_silently=False,
+                to_emails=to_email,
+                subject=subject,
             )
-            print(f'[EMAIL OK] Sent to {to_email}: {subject}')
+            if html_message:
+                mail.content = [
+                    Content(MimeType.text, message),
+                    Content(MimeType.html, html_message),
+                ]
+            else:
+                mail.content = [Content(MimeType.text, message)]
+            response = sg.send(mail)
+            print(f'[EMAIL OK] Sent to {to_email} — status {response.status_code}')
         except Exception as e:
             print(f'[EMAIL ERROR] Failed to send to {to_email}: {e}')
 
