@@ -118,8 +118,10 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 # SendGrid Email
 SENDGRID_API_KEY = config('SENDGRID_API_KEY', default='')
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# Default to console — overridden to SMTP only when key is present
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = config('EMAIL_PORT', default=2525, cast=int)
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'apikey'

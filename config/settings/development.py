@@ -1,12 +1,15 @@
 from .base import *
+import dj_database_url
+from decouple import config as env
 
 DEBUG = True
 
-# Use console email in dev if no SendGrid key is set
-if not SENDGRID_API_KEY:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# If DATABASE_URL is set (CI / Render), use it — otherwise fall back to base.py individual vars
+_database_url = env('DATABASE_URL', default='')
+if _database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(_database_url, conn_max_age=600)
+    }
 
-# Django Debug Toolbar (optional, install separately)
-# INSTALLED_APPS += ['debug_toolbar']
-# MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
-# INTERNAL_IPS = ['127.0.0.1']
+# Always use console in development — never attempt real SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

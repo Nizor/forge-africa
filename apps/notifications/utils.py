@@ -16,19 +16,59 @@ def create_notification(user, message, link=''):
     Notification.objects.create(user=user, message=message, link=link)
 
 
+def notify_admins(message, link=''):
+    """Create an in-app notification for every active admin user."""
+    from apps.accounts.models import User
+    from .models import Notification
+    admin_users = User.objects.filter(role=User.ADMIN, is_active=True)
+    for admin_user in admin_users:
+        Notification.objects.create(user=admin_user, message=message, link=link)
+
+
 def send_email(to_email, subject, message, html_message=None):
-    """Send a transactional email via SendGrid SMTP."""
-    try:
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[to_email],
-            html_message=html_message or message,
-            fail_silently=False,
-        )
-    except Exception as e:
-        print(f'[EMAIL ERROR] Failed to send to {to_email}: {e}')
+    """
+    Send email in a background thread so it never blocks a web request.
+    SMTP connection hangs are completely isolated from the user experience.
+    """
+    import threading
+
+    def _send():
+        from django.core.mail import get_connection
+        try:
+            if settings.SENDGRID_API_KEY:
+                port = getattr(settings, 'EMAIL_PORT', 2525)
+                use_tls = port != 465
+                use_ssl = port == 465
+                connection = get_connection(
+                    backend='django.core.mail.backends.smtp.EmailBackend',
+                    host='smtp.sendgrid.net',
+                    port=port,
+                    username='apikey',
+                    password=settings.SENDGRID_API_KEY,
+                    use_tls=use_tls,
+                    use_ssl=use_ssl,
+                    fail_silently=False,
+                    timeout=15,
+                )
+            else:
+                connection = get_connection(
+                    backend='django.core.mail.backends.console.EmailBackend',
+                )
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[to_email],
+                html_message=html_message or message,
+                connection=connection,
+                fail_silently=False,
+            )
+            print(f'[EMAIL OK] Sent to {to_email}: {subject}')
+        except Exception as e:
+            print(f'[EMAIL ERROR] Failed to send to {to_email}: {e}')
+
+    thread = threading.Thread(target=_send, daemon=True)
+    thread.start()
 
 
 def send_verification_email(user, request):
@@ -82,6 +122,10 @@ def notify_admin_new_rfq(rfq, request):
     </div>
     """
     send_email(settings.ADMIN_EMAIL, subject, f'New RFQ {rfq.short_id} submitted. Review at {admin_url}', html)
+    notify_admins(
+        f'📋 New RFQ submitted: {rfq.short_id} — {rfq.title} by {rfq.client.get_full_name()}',
+        f'/forge/rfqs/{rfq.pk}/'
+    )
 
 
 def notify_client_rfq_approved(rfq):
@@ -180,16 +224,107 @@ def notify_client_quote_ready(rfq):
 
 def notify_deposit_paid(order):
     rfq = order.rfq
-    # Notify client
+    vendor = rfq.quote.selected_bid.vendor
+
+    # --- Client: payment confirmed ---
     send_email(
         rfq.client.email,
-        f'Payment confirmed — Order for RFQ {rfq.short_id}',
-        f'Your deposit of ₦{order.deposit_amount:,.2f} has been confirmed. Your project is commencing!'
+        f'Payment confirmed — RFQ {rfq.short_id}',
+        f'Your deposit of ₦{order.deposit_amount:,.2f} has been confirmed. Your project is now in progress!',
+        html_message=f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #E85D04; padding: 20px; text-align: center;">
+                <h1 style="color: white; margin: 0;">FORGE AFRICA</h1>
+            </div>
+            <div style="padding: 30px; background: #f9f9f9;">
+                <h2>Payment Confirmed ✅</h2>
+                <p>Hello {rfq.client.first_name}, your deposit of <strong>₦{order.deposit_amount:,.2f}</strong>
+                for project <strong>{rfq.title}</strong> has been received.</p>
+                <p>Your vendor has been notified and will commence work shortly.</p>
+                <div style="background: white; border-left: 4px solid #E85D04; padding: 15px; margin: 15px 0;">
+                    <strong>RFQ:</strong> {rfq.short_id}<br>
+                    <strong>Balance due on completion:</strong> ₦{order.balance_due:,.2f}
+                </div>
+                <a href="{settings.SITE_URL}/client/orders/" style="display: inline-block; background: #E85D04; color: white;
+                   padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 20px 0;">
+                    View Your Order
+                </a>
+            </div>
+        </div>
+        """
     )
-    # Notify admin
+    create_notification(
+        rfq.client,
+        f'✅ Payment confirmed! ₦{order.deposit_amount:,.2f} deposit received for {rfq.short_id}. Your vendor is starting work.',
+        f'/client/orders/'
+    )
+
+    # --- Vendor: work order notification ---
+    send_email(
+        vendor.email,
+        f'[Forge Africa] Work Order — {rfq.short_id}: Client deposit received, please commence',
+        f'The client has paid their deposit for {rfq.title}. Please commence work.',
+        html_message=f"""
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #1A1A2E; padding: 20px; text-align: center;">
+                <h1 style="color: #E85D04; margin: 0;">FORGE AFRICA</h1>
+                <p style="color: #ccc; margin: 5px 0 0;">Work Order</p>
+            </div>
+            <div style="padding: 30px; background: #f9f9f9;">
+                <h2>🚀 Deposit Received — Please Commence Work</h2>
+                <p>Hello {vendor.first_name}, the client has completed their deposit payment for the following project.
+                You may now begin work.</p>
+                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; margin: 15px 0;">
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px; font-weight: bold; width: 40%;">RFQ Reference:</td>
+                        <td style="padding: 10px;">{rfq.short_id}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px; font-weight: bold;">Project:</td>
+                        <td style="padding: 10px;">{rfq.title}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px; font-weight: bold;">Category:</td>
+                        <td style="padding: 10px;">{rfq.category.name}</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px; font-weight: bold;">Quantity:</td>
+                        <td style="padding: 10px;">{rfq.quantity} unit(s)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 10px; font-weight: bold;">Your Bid Price:</td>
+                        <td style="padding: 10px; color: #16a34a; font-weight: bold;">₦{rfq.quote.selected_bid.price:,.2f}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; font-weight: bold;">Client Deadline:</td>
+                        <td style="padding: 10px; color: #E85D04;">{rfq.deadline.strftime('%d %b %Y')}</td>
+                    </tr>
+                </table>
+                <div style="background: #fff3cd; border-left: 4px solid #E85D04; padding: 15px; margin: 15px 0;">
+                    <strong>Important:</strong> Please log in to your vendor dashboard to view the full project
+                    details and update your progress. Contact Forge Africa if you have any questions.
+                </div>
+                <a href="{settings.SITE_URL}/vendor/orders/" style="display: inline-block; background: #E85D04; color: white;
+                   padding: 14px 28px; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 20px 0;">
+                    Go to Vendor Dashboard
+                </a>
+            </div>
+        </div>
+        """
+    )
+    create_notification(
+        vendor,
+        f'🚀 Work Order: Deposit received for {rfq.short_id} — {rfq.title}. Please commence work.',
+        f'/vendor/orders/'
+    )
+
+    # --- Admin: in-app + email ---
     send_email(
         settings.ADMIN_EMAIL,
-        f'[Forge Africa] Deposit received for RFQ {rfq.short_id}',
-        f'Client {rfq.client.get_full_name()} paid ₦{order.deposit_amount:,.2f} deposit for {rfq.title}.'
+        f'[Forge Africa] Deposit received — {rfq.short_id}',
+        f'Client {rfq.client.get_full_name()} paid ₦{order.deposit_amount:,.2f} for {rfq.title}. Vendor {vendor.get_full_name()} has been notified to start work.'
     )
-    create_notification(rfq.client, f'Payment confirmed! Your project {rfq.short_id} is now in progress.', f'/client/orders/')
+    notify_admins(
+        f'💰 Deposit paid: {rfq.client.get_full_name()} paid ₦{order.deposit_amount:,.2f} for {rfq.short_id}. Vendor notified to start work.',
+        f'/forge/rfqs/{rfq.pk}/'
+    )

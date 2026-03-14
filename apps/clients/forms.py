@@ -20,6 +20,13 @@ class MultipleFileInput(forms.FileInput):
 
 
 class MultipleFileField(forms.FileField):
+    def clean_deadline(self):
+        from datetime import date
+        deadline = self.cleaned_data.get('deadline')
+        if deadline and deadline <= date.today():
+            raise forms.ValidationError('Deadline must be a future date.')
+        return deadline
+
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('widget', MultipleFileInput())
         super().__init__(*args, **kwargs)
@@ -48,6 +55,13 @@ class RFQForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 4}),
             'additional_notes': forms.Textarea(attrs={'rows': 3}),
         }
+
+    def clean_deadline(self):
+        from datetime import date
+        deadline = self.cleaned_data.get('deadline')
+        if deadline and deadline <= date.today():
+            raise forms.ValidationError('Deadline must be a future date.')
+        return deadline
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
