@@ -1,0 +1,77 @@
+name: Forge Africa CI
+
+on:
+  push:
+    branches: [ main, staging ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: forge_test
+          POSTGRES_USER: forge_user
+          POSTGRES_PASSWORD: forge_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SECRET_KEY: ci-test-secret-key-not-for-production-use
+      DEBUG: "True"
+      DJANGO_SETTINGS_MODULE: config.settings.development
+      DATABASE_URL: postgresql://forge_user:forge_pass@localhost:5432/forge_test
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      SENDGRID_API_KEY: ""
+      DEFAULT_FROM_EMAIL: test@forgeafrica.africa
+      ADMIN_EMAIL: admin@forgeafrica.africa
+      SITE_URL: http://localhost:8000
+      PAYSTACK_PUBLIC_KEY: pk_test_dummy
+      PAYSTACK_SECRET_KEY: sk_test_dummy
+      EMAIL_PORT: "2525"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check for missing migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Run migrations
+        run: python manage.py migrate --no-input
+
+      - name: Seed categories
+        run: python manage.py seed_categories
+
+      - name: Run collectstatic
+        run: python manage.py collectstatic --no-input
+
+      - name: Run tests
+        run: python manage.py test tests --verbosity=2
+
+      - name: Print summary
+        if: always()
+        run: |
+          echo "================================"
+          echo "  Forge Africa CI Complete"
+          echo "================================"
