@@ -105,3 +105,72 @@ class TermsView(View):
 class PrivacyView(View):
     def get(self, request):
         return render(request, 'public/policy_privacy.html')
+
+
+class SitemapView(View):
+    """Dynamic XML sitemap — submitted to Google Search Console."""
+    def get(self, request):
+        from django.http import HttpResponse
+        from django.utils import timezone
+
+        base = f"{request.scheme}://{request.get_host()}"
+        today = timezone.now().date().isoformat()
+
+        static_pages = [
+            ('/go/',                     '1.0', 'weekly'),
+            ('/go/about/',               '0.8', 'monthly'),
+            ('/go/rfqs/',                '0.9', 'daily'),
+            ('/go/vendors/',             '0.9', 'weekly'),
+            ('/go/contact/',             '0.5', 'monthly'),
+            ('/go/terms/',               '0.3', 'yearly'),
+            ('/go/privacy/',             '0.3', 'yearly'),
+            ('/go/refund-policy/',       '0.3', 'yearly'),
+            ('/go/cancellation-policy/', '0.3', 'yearly'),
+        ]
+
+        # Add category filter URLs
+        categories = ServiceCategory.objects.filter(is_active=True)
+        for cat in categories:
+            static_pages.append((f'/go/rfqs/?category={cat.slug}',    '0.7', 'daily'))
+            static_pages.append((f'/go/vendors/?category={cat.slug}', '0.7', 'weekly'))
+
+        url_entries = []
+        for path, priority, changefreq in static_pages:
+            url_entries.append(
+                f"  <url><loc>{base}{path}</loc>"
+                f"<lastmod>{today}</lastmod>"
+                f"<changefreq>{changefreq}</changefreq>"
+                f"<priority>{priority}</priority></url>"
+            )
+
+        xml = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            + '\n'.join(url_entries)
+            + '\n</urlset>'
+        )
+        return HttpResponse(xml, content_type='application/xml')
+
+
+class RobotsView(View):
+    """robots.txt — controls what crawlers index."""
+    def get(self, request):
+        from django.http import HttpResponse
+        base = f"{request.scheme}://{request.get_host()}"
+        robots = (
+            "User-agent: *\n"
+            "Allow: /go/\n"
+            "Allow: /accounts/login/\n"
+            "Allow: /accounts/register/\n"
+            "\n"
+            "Disallow: /client/\n"
+            "Disallow: /vendor/\n"
+            "Disallow: /forge/\n"
+            "Disallow: /payments/\n"
+            "Disallow: /notifications/\n"
+            "Disallow: /admin/\n"
+            "Disallow: /setup/\n"
+            "\n"
+            f"Sitemap: {base}/sitemap.xml\n"
+        )
+        return HttpResponse(robots, content_type='text/plain')

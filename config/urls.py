@@ -16,6 +16,11 @@ urlpatterns = [
 
     path('go/', include('apps.public.urls')),
 
+    # SEO — served at root level so Google finds them
+    path('sitemap.xml', __import__('apps.public.views', fromlist=['SitemapView']).SitemapView.as_view(), name='sitemap'),
+    path('robots.txt', __import__('apps.public.views', fromlist=['RobotsView']).RobotsView.as_view(), name='robots'),
+
+
     # Root redirect — authenticated users go to dashboard
     path('', HomeRedirectView.as_view(), name='home'),
 ]

@@ -1,5 +1,28 @@
 {% extends "public/base_public.html" %}
-{% block title %}Open RFQs — Forge Africa{% endblock %}
+{% block title %}Open Manufacturing Requests Nigeria | Find Projects to Bid — Forge Africa{% endblock %}
+{% block meta_desc %}Browse active manufacturing RFQs open for bidding in Nigeria. Find fabrication, moulding, welding and more projects matching your capabilities. Register to submit bids.{% endblock %}
+{% block meta_keywords %}manufacturing RFQs Nigeria, open manufacturing requests, bid on manufacturing projects Nigeria, fabrication jobs Lagos, manufacturing tenders Nigeria{% endblock %}
+{% block og_title %}Open Manufacturing RFQs Nigeria — Forge Africa{% endblock %}
+{% block og_desc %}Browse active manufacturing requests from Nigerian businesses. Register as a vendor to submit competitive bids.{% endblock %}
+{% block meta_robots %}index, follow{% endblock %}
+{% block json_ld %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Open Manufacturing Requests — Forge Africa",
+    "url": "{{ request.scheme }}://{{ request.get_host() }}/go/rfqs/",
+    "description": "Active manufacturing RFQs open for bidding from verified Nigerian businesses.",
+    "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "{{ request.scheme }}://{{ request.get_host() }}/go/"},
+            {"@type": "ListItem", "position": 2, "name": "Open RFQs", "item": "{{ request.scheme }}://{{ request.get_host() }}/go/rfqs/"}
+        ]
+    }
+}
+</script>
+{% endblock %}
 {% block meta_desc %}Browse active manufacturing requests open for bidding on Forge Africa. Find projects matching your capabilities.{% endblock %}
 
 {% block content %}
