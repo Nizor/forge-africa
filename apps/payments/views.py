@@ -153,3 +153,4 @@ def _confirm_payment(order, reference, gateway_data):
     order.rfq.save()
 
     notify_deposit_paid(order)
+

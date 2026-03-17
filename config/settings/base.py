@@ -136,3 +136,11 @@ PAYSTACK_PUBLIC_KEY = config('PAYSTACK_PUBLIC_KEY', default='')
 # App settings
 SITE_URL = config('SITE_URL', default='http://localhost:8000')
 DEFAULT_DEPOSIT_PERCENTAGE = config('DEFAULT_DEPOSIT_PERCENTAGE', default=30, cast=int)
+
+# Session settings
+SESSION_COOKIE_AGE = 86400 * 7  # 7 days
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# File upload limits
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024   # 10MB
+FILE_UPLOAD_MAX_MEMORY_SIZE  = 10 * 1024 * 1024   # 10MB
