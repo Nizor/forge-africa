@@ -24,6 +24,7 @@ staticfiles/
 .env
 .env.local
 .env.*.local
+.env.production
 
 # IDE
 .vscode/
@@ -43,3 +44,6 @@ npm-debug.log
 htmlcov/
 .coverage
 coverage.xml
+
+# Prodiuction
+passenger_wsgi.py

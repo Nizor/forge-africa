@@ -34,7 +34,8 @@ class MultipleFileField(forms.FileField):
     def clean(self, data, initial=None):
         if not data:
             return []
-        return [super().clean(f, initial) for f in data]
+        parent = super()
+        return [parent.clean(f, initial) for f in data]
 
 
 class RFQForm(forms.ModelForm):
