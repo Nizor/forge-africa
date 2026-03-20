@@ -49,7 +49,7 @@ class RFQForm(forms.ModelForm):
         fields = [
             'title', 'category', 'description',
             'quantity', 'materials', 'deadline',
-            'budget_min', 'budget_max', 'additional_notes',
+            'budget_min', 'budget_max', 'additional_notes','phone',
         ]
         widgets = {
             'deadline': forms.DateInput(attrs={'type': 'date'}),

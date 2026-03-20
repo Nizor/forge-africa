@@ -204,6 +204,17 @@
                     <div>
                         <p class="font-medium text-gray-900">{{ rfq.client.get_full_name() }}</p>
                         <p class="text-xs text-gray-500">{{ rfq.client.email }}</p>
+                        {% if rfq.phone %}
+                        <div class="mt-2 flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg inline-flex">
+                            <span>📞</span>
+                            <div>
+                                <p class="text-xs text-gray-400">Client Phone</p>
+                                <a href="tel:{{ rfq.phone }}" class="font-semibold text-sm text-[#E85D04] hover:underline">
+                                    {{ rfq.phone }}
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="text-xs text-gray-500 space-y-1 border-t pt-3">

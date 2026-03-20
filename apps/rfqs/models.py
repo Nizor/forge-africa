@@ -79,6 +79,11 @@ class RFQ(models.Model):
     budget_max = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     additional_notes = models.TextField(blank=True)
 
+    phone = models.CharField(
+    max_length=20, blank=True,
+    help_text='Contact number for admin to reach client if needed'
+    )
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=DRAFT)
 
     # Admin fields
