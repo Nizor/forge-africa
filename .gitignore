@@ -47,3 +47,6 @@ coverage.xml
 
 # Prodiuction
 passenger_wsgi.py
+
+#Tests and Debugs
+.csv
